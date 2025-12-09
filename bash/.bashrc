@@ -46,6 +46,7 @@ ${PS_COLOR_NO_COLOR}\n\$ "
 
 alias vim='nvim'
 alias ll='ls -alFh'
+alias hyprquit='hyprctl dispatch exit'
 
 extract () {
    if [ -f "$1" ] ; then
