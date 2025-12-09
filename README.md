@@ -1,4 +1,4 @@
 # stowdots
 
 
-my configs for linux-based workstations
+my configs for linux-based workstations, deployed with GNU stow
