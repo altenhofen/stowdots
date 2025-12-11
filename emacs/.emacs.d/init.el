@@ -294,11 +294,13 @@
 
 
 (use-package marginalia
+  :ensure t
   :init
   (marginalia-mode 1))
 
 
 (use-package vertico
+  :ensure t
   :config
   (vertico-multiform-mode 1))
 
@@ -445,6 +447,9 @@ Version: 2024-05-20"
   :hook (prog-mode . lsp)
   :commands (lsp lsp-deferred)
   :custom
+  (lsp-pyright-langserver-command "basedpyright-langserver")
+  (lsp-pyright-use-library-code-for-types t)
+  (lsp-pyright-typechecking-mode "basic")
   (lsp-prefer-flymake nil)
   (lsp-prefer-capf t)
   (lsp-eldoc-render-all t)
@@ -542,7 +547,6 @@ Version: 2024-05-20"
   (corfu-auto-prefix 1)
   (corfu-preview-current nil)
   :init
-  (corfu-popupinfo-mode)
   (global-corfu-mode))
 
 (use-package denote
@@ -606,7 +610,40 @@ Version: 2024-05-20"
 (use-package neotree)
 (global-set-key (kbd "<f8>") 'neotree-toggle)
 (global-set-key (kbd "<f5>") 'compile)
+(global-display-line-numbers-mode 1)
+(use-package evil
+  :ensure t
+  :init (evil-mode 1))
 
 (set-face-attribute 'default nil :font "Cascadia Code" :height 130)
 
+;; basedpyright
+(use-package lsp-pyright
+  :ensure t
+  :custom (lsp-pyright-langserver-command "basedpyright")
+  :hook (python-ts-mode . (lambda ()
+                          (require 'lsp-pyright)
+                          (lsp))))  ; or lsp-deferred
+
+(with-eval-after-load 'lsp-mode
+  (setq lsp-disabled-clients '(ruff-lsp)))
+
+(use-package pyvenv
+  :ensure t
+  :config
+  (pyvenv-mode 1))
+
+(when (treesit-available-p)
+  (add-to-list 'major-mode-remap-alist
+               '(python-mode . python-ts-mode)))
+(setq lsp-completion-enable-additional-text-edit t)
+(setq lsp-prefer-capf t)
+(with-eval-after-load 'lsp-mode
+  (advice-add 'lsp-completion-at-point :before-until #'ignore))
+(setq lsp-completion-provider :none)
+
+
+
+(provide 'init)
+;;; init.el ends
 

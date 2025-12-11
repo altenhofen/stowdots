@@ -19,7 +19,8 @@
     "bluetooth",
     "network",
     "battery",
-    "clock"  // Add clock module to the center
+    "clock",
+    "tray"
   ],
   "hyprland/window": {
     "max-length": 30
