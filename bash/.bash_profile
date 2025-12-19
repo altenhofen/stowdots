@@ -6,7 +6,10 @@ if [ -f ~/.bashrc ]; then
     . ~/.bashrc
 fi
 
-# User specific environment and startup programs
-if uwsm check may-start && uwsm select; then
-	exec uwsm start hyprland.desktop
-fi
+export LS_OPTS='--color=auto'
+export GREP_OPTIONS='--color=auto' GREP_COLOR='1;32'
+export CLICOLOR=1
+export LSCOLORS=ExFxCxDxBxegedabagacad
+export TERM=xterm-color
+export EDITOR=nvim
+export BROWSER=firefox

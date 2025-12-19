@@ -4,6 +4,9 @@
 if [ -f /etc/bashrc ]; then
     . /etc/bashrc
 fi
+if [ -f /etc/bash.bashrc ]; then
+    . /etc/bash.bashrc
+fi
 
 # User specific environment
 if ! [[ "$PATH" =~ "$HOME/.local/bin:$HOME/bin:" ]]; then
@@ -25,8 +28,26 @@ fi
 unset rc
 
 if [ -f /usr/share/git-core/contrib/completion/git-prompt.sh ]; then
-. /usr/share/git-core/contrib/completion/git-prompt.sh
+source /usr/share/git-core/contrib/completion/git-prompt.sh
 fi
+
+if [ -f /etc/bash_completion.d/git-prompt ]; then
+source /etc/bash_completion.d/git-prompt
+fi
+
+alias less='less --RAW-CONTROL-CHARS'
+alias ls='ls --color ${LS_OPTS}'
+alias grep='rg -uuu -p'
+
+
+if ! shopt -oq posix; then
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+  fi
+fi
+
 
 PS_COLOR_RED='\[\033[0;31m\]'
 PS_COLOR_GREEN='\[\033[0;32m\]'
