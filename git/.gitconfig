@@ -3,7 +3,7 @@
 	email = augustoaltenhofen@protonmail.com
 
 [core]
-	editor = vim
+	editor = nvim
 
 [grep]
 	linenumber = true

@@ -9,8 +9,8 @@ if [ -f /etc/bash.bashrc ]; then
 fi
 
 # User specific environment
-if ! [[ "$PATH" =~ "$HOME/.local/bin:$HOME/bin:" ]]; then
-    PATH="$HOME/.local/bin:$HOME/bin:$PATH"
+if ! [[ "$PATH" =~ "$HOME/.local/bin:$HOME/bin:$HOME/.cargo/bin" ]]; then
+    PATH="$HOME/.local/bin:$HOME/bin:$PATH:$HOME/.cargo/bin"
 fi
 export PATH
 
@@ -38,6 +38,8 @@ fi
 alias less='less --RAW-CONTROL-CHARS'
 alias ls='ls --color ${LS_OPTS}'
 alias grep='rg -uuu -p'
+alias pbcopy='xclip -selection clipboard'
+alias pbpaste='xclip -selection clipboard -o'
 
 
 if ! shopt -oq posix; then
@@ -67,6 +69,7 @@ ${PS_COLOR_NO_COLOR}\n\$ "
 
 alias vim='nvim'
 alias ll='ls -alFh'
+alias ff='fastfetch'
 alias hyprquit='hyprctl dispatch exit'
 
 extract () {
@@ -94,6 +97,7 @@ cdl () {
 }
 
 export PATH=$PATH:$HOME/bin:$HOME/.local/bin
+export EDITOR='nvim'
 
 
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
