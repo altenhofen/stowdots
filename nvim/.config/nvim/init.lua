@@ -26,8 +26,21 @@ require('lazy').setup({
   {"nvim-treesitter/nvim-treesitter", build = ":TSUpdate"},
   {'hrsh7th/nvim-cmp'},
   {'xiyaowong/transparent.nvim'},
-  { 'junegunn/fzf.vim', dependencies = { 'junegunn/fzf' } }
+  { 'junegunn/fzf.vim', dependencies = { 'junegunn/fzf' } },
+  {	  'maxmx03/solarized.nvim',
+	  lazy = false,
+	  priority = 1000,
+	  ---@type solarized.config
+	  opts = {},
+	  config = function(_, opts)
+	    vim.o.termguicolors = true
+	    vim.o.background = 'dark'
+	    require('solarized').setup(opts)
+	    vim.cmd.colorscheme 'solarized'
+	  end,
+	}
 })
+
 
 
 local lsp_zero = require('lsp-zero')
@@ -97,8 +110,9 @@ cmp.setup({
 })
 
 
-vim.cmd.colorscheme('desert')
-vim.g.transparent_enabled = true
+-- vim.cmd.colorscheme('desert')
+-- vim.g.transparent_enabled = true
+vim.opt.number = true
 
 vim.api.nvim_set_keymap('n', '<Space><Space>', ':FZF<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<Space>b', ':Buffers<CR>', { noremap = true, silent = true })

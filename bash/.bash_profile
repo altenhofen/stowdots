@@ -13,3 +13,7 @@ export LSCOLORS=ExFxCxDxBxegedabagacad
 export TERM=xterm-color
 export EDITOR=nvim
 export BROWSER=firefox
+
+if [ -f ~/.profile ]; then
+	. ~/.profile
+fi

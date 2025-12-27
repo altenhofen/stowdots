@@ -98,6 +98,7 @@ cdl () {
 
 export PATH=$PATH:$HOME/bin:$HOME/.local/bin
 export EDITOR='nvim'
+export TERM=screen-256color
 
 
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
