@@ -40,6 +40,8 @@ alias ls='ls --color ${LS_OPTS}'
 alias grep='rg -uuu -p'
 alias pbcopy='xclip -selection clipboard'
 alias pbpaste='xclip -selection clipboard -o'
+alias v='nvim'
+alias vi='nvim'
 
 
 if ! shopt -oq posix; then

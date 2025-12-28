@@ -1,7 +1,7 @@
 configuration {
 	modi: "window,drun,combi";
-	font: "IBM Plex Mono 15";
-	combi-modi: "window,drun";
+	font: "IBM Plex Mono 12";
+	combi-modi: "window,drun,run";
 /* 	preview-cmd: ;*/
 /*	on-selection-changed: ;*/
 /*	on-mode-changed: ;*/

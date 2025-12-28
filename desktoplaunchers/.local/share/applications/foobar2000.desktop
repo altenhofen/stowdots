@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Foobar2000
+GenericName=Music Player
+Comment=Foobar2000 music player (Wine)
+Path=/home/altenhofen/pillow/programs/foobar2000
+Exec=wine foobar2000.exe
+Icon=foobar2000
+Terminal=false
+Categories=Audio;Music;Player;
+StartupNotify=false
+
