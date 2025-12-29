@@ -17,3 +17,4 @@ export BROWSER=firefox
 if [ -f ~/.profile ]; then
 	. ~/.profile
 fi
+. "$HOME/.cargo/env"

@@ -35,6 +35,9 @@ if [ -f /etc/bash_completion.d/git-prompt ]; then
 source /etc/bash_completion.d/git-prompt
 fi
 
+alias cob='cobc -x -free'
+alias cobd='cobc -x -g -debug'
+alias cobr='cobcrun'
 alias less='less --RAW-CONTROL-CHARS'
 alias ls='ls --color ${LS_OPTS}'
 alias grep='rg -uuu -p'
@@ -101,8 +104,10 @@ cdl () {
 export PATH=$PATH:$HOME/bin:$HOME/.local/bin
 export EDITOR='nvim'
 export TERM=screen-256color
+export TERMINAL=gnome-terminal
 
 
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+. "$HOME/.cargo/env"
