@@ -133,6 +133,7 @@ require('lazy').setup({
 
   {
     "nvim-treesitter/nvim-treesitter",
+    branch = "master",
     lazy = false,              -- REQUIRED
     build = ":TSUpdate",
     config = function()
@@ -602,7 +603,6 @@ autocmd('FileType', {
   group = augroup('java_setup', { clear = true }),
   pattern = 'java',
   callback = function()
-    -- Check if jdtls is available
     local jdtls_ok, jdtls = pcall(require, 'jdtls')
     if not jdtls_ok then
       return
@@ -610,26 +610,35 @@ autocmd('FileType', {
 
     local root_markers = { 'pom.xml', 'build.gradle', 'gradlew', '.git' }
     local root_dir = require('jdtls.setup').find_root(root_markers)
-    
+
     if not root_dir then
       return
     end
 
-    local workspace_dir = vim.fn.expand('~/.cache/jdtls-workspace/')
+    local home = os.getenv('HOME')
+    local workspace_dir = home .. '/.cache/jdtls-workspace/'
       .. vim.fn.fnamemodify(root_dir, ':p:h:t')
 
-    local jdtls_path = vim.fn.expand('~/.local/share/nvim/mason/packages/jdtls')
-    local lombok_path = vim.fn.expand('~/.local/share/nvim/mason/packages/lombok-nightly/lombok.jar')
+    local jdtls_path = home .. '/.local/share/nvim/mason/packages/jdtls'
+    local lombok_path = home .. '/.local/share/nvim/mason/packages/lombok-nightly/lombok.jar'
 
-    -- Check if jdtls is installed
+    -- IMPORTANT: Use Java 21 to run jdtls itself
+    local java21 = home .. '/.sdkman/candidates/java/21.0.5-tem/bin/java'
+
+    -- Check if paths exist
+    if vim.fn.executable(java21) == 0 then
+      vim.notify('Java 21 not found at: ' .. java21, vim.log.levels.ERROR)
+      return
+    end
+
     if vim.fn.isdirectory(jdtls_path) == 0 then
-      vim.notify('jdtls not installed. Run :MasonInstall jdtls lombok-nightly', vim.log.levels.WARN)
+      vim.notify('jdtls not installed. Run :MasonInstall jdtls', vim.log.levels.WARN)
       return
     end
 
     local config = {
       cmd = {
-        'java',
+        java21,
         '-Declipse.application=org.eclipse.jdt.ls.core.id1',
         '-Dosgi.bundles.defaultStartLevel=4',
         '-Declipse.product=org.eclipse.jdt.ls.core.product',
@@ -647,7 +656,21 @@ autocmd('FileType', {
       root_dir = root_dir,
       settings = {
         java = {
-          configuration = { updateBuildConfiguration = 'interactive' },
+          configuration = {
+            updateBuildConfiguration = 'interactive',
+            -- Multiple Java versions for different projects
+            runtimes = {
+              {
+                name = 'JavaSE-17',
+                path = home .. '/.sdkman/candidates/java/17.0.9-tem',
+                default = true,
+              },
+              {
+                name = 'JavaSE-21',
+                path = home .. '/.sdkman/candidates/java/21.0.5-tem',
+              },
+            },
+          },
           eclipse = { downloadSources = true },
           maven = { downloadSources = true },
           format = { enabled = true },
@@ -679,8 +702,8 @@ autocmd('FileType', {
 })
 
 -- Print a subtle message on startup (optional, remove if annoying)
--- vim.api.nvim_create_autocmd('VimEnter', {
---   callback = function()
---     print('Config loaded. Press <Space>fk to see keymaps.')
---   end,
--- })
+vim.api.nvim_create_autocmd('VimEnter', {
+  callback = function()
+    print('Config loaded. Press <Space>fk to see keymaps.')
+  end,
+})
