@@ -101,6 +101,27 @@ cdl () {
   builtin cd "$@" && ll
 }
 
+
+dev() {
+  cd "$1" || return
+  local session_name
+  session_name=$(basename "$PWD")
+
+  # Create session and force a standard large size so percentages work
+  tmux new-session -d -s "$session_name" -n main -x "$(tput cols)" -y "$(tput lines)"
+  
+  # Now splits will work because tmux knows the "size" of the window
+  tmux split-window -h -p 30
+  tmux split-window -v -p 50
+  
+  # Set up the editor
+  tmux select-pane -t 0
+  tmux send-keys "nvim ." Enter
+  
+  # Finally, attach
+  tmux attach -t "$session_name"
+}
+
 export PATH=$PATH:$HOME/bin:$HOME/.local/bin
 export EDITOR='nvim'
 export TERM=screen-256color
@@ -111,3 +132,7 @@ export TERMINAL=gnome-terminal
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
 . "$HOME/.cargo/env"
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
