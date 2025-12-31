@@ -1,5 +1,6 @@
 local lazypath = vim.fn.stdpath('data') .. '/lazy/lazy.nvim'
 
+
 if not vim.uv.fs_stat(lazypath) then
   print('Installing lazy.nvim...')
   vim.fn.system({
@@ -10,6 +11,10 @@ if not vim.uv.fs_stat(lazypath) then
   })
   print('Done.')
 end
+
+
+-- prevent warnings
+local vim = vim
 
 vim.opt.rtp:prepend(lazypath)
 
