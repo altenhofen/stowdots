@@ -70,6 +70,17 @@ require('lazy').setup({
         -- opts = {}
     },
     {
+        'nvim-tree/nvim-tree.lua',
+        config = function()
+            require('nvim-tree').setup({
+                view = { width = 30 },
+                filters = { dotfiles = false },
+                update_focused_file = { enable = true }
+            })
+            vim.keymap.set('n', '<leader>e', ':NvimTreeToggle<CR>')
+        end,
+    },
+    {
         'maxmx03/solarized.nvim',
         lazy = false,
         priority = 1000,
@@ -479,7 +490,7 @@ keymap('n', '<C-p>', function() harpoon:list():prev() end, { desc = 'Harpoon pre
 keymap('n', '<C-n>', function() harpoon:list():next() end, { desc = 'Harpoon next' })
 
 -- Quick file explorer (built-in netrw)
-keymap('n', '<leader>e', ':Explore<CR>', opts)
+-- keymap('n', '<leader>e', ':Explore<CR>', opts)
 
 -- Terminal
 keymap('n', '<leader>tt', ':split | terminal<CR>', { desc = 'Terminal horizontal' })
@@ -585,7 +596,7 @@ public class %s {
 ]], package, class_name)
         vim.api.nvim_buf_set_lines(0, 0, -1, false, vim.split(template, '\n'))
         vim.cmd('normal! 5ggO') -- Go to line 5, open line above
-        vim.cmd('startinsert') -- Enter insert mode
+        vim.cmd('startinsert')  -- Enter insert mode
     end
 end, { nargs = 1, desc = 'Create new Java class' })
 
