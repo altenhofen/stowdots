@@ -35,9 +35,6 @@ if [ -f /etc/bash_completion.d/git-prompt ]; then
 source /etc/bash_completion.d/git-prompt
 fi
 
-alias cob='cobc -x -free'
-alias cobd='cobc -x -g -debug'
-alias cobr='cobcrun'
 alias less='less --RAW-CONTROL-CHARS'
 alias ls='ls --color ${LS_OPTS}'
 alias grep='rg -uuu -p'
@@ -101,26 +98,19 @@ cdl () {
   builtin cd "$@" && ll
 }
 
+dev () {
+  local dir name
+  if [ -n "$1" ]; then
+    dir="$(cd "$1" && pwd)" || return 1
+  else
+    dir="$PWD"
+  fi
 
-dev() {
-  cd "$1" || return
-  local session_name
-  session_name=$(basename "$PWD")
+  name="$(basename "$dir" | tr . _ | tr ' ' _)"
 
-  # Create session and force a standard large size so percentages work
-  tmux new-session -d -s "$session_name" -n main -x "$(tput cols)" -y "$(tput lines)"
-  
-  # Now splits will work because tmux knows the "size" of the window
-  tmux split-window -h -p 30
-  tmux split-window -v -p 50
-  
-  # Set up the editor
-  tmux select-pane -t 0
-  tmux send-keys "nvim ." Enter
-  
-  # Finally, attach
-  tmux attach -t "$session_name"
+  tmux new -A -s "$name" -c "$dir"
 }
+
 
 export PATH=$PATH:$HOME/bin:$HOME/.local/bin
 export EDITOR='nvim'

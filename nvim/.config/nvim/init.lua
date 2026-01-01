@@ -301,6 +301,7 @@ local on_attach = function(client, bufnr)
     -- Actions
     vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, opts)
     vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, opts)
+    vim.keymap.set("n", "ga", vim.lsp.buf.code_action, { buffer = true })
     vim.keymap.set({ 'n', 'v' }, '<leader>f', function()
         vim.lsp.buf.format({ async = true })
     end, opts)
@@ -717,6 +718,7 @@ autocmd('FileType', {
     end,
 })
 
+-- format on save
 vim.api.nvim_create_autocmd("BufWritePre", {
     callback = function()
         local mode = vim.api.nvim_get_mode().mode
@@ -727,6 +729,7 @@ vim.api.nvim_create_autocmd("BufWritePre", {
         end
     end
 })
+
 
 -- Print a subtle message on startup (optional, remove if annoying)
 vim.api.nvim_create_autocmd('VimEnter', {
