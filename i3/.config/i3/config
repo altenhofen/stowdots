@@ -200,7 +200,11 @@ bar {
     status_command i3blocks
 	position bottom
 }
-exec --no-startup-id feh --bg-fill ~/Pictures/wallpaper.jpg
+exec_always --no-startup-id feh --bg-fill ~/Pictures/wallpapers/wallpaper.jpg
 exec_always --no-startup-id dunst ~/.config/dunst/dunstrc
+exec_always --no-startup-id picom
+exec_always --no-startup-id volumeicon
+
+
 
 
