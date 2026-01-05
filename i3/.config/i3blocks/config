@@ -1,0 +1,20 @@
+[weather]
+command=curl -Ss 'https://wttr.in/Univates?0&T&Q' | cut -c 16- | head -2 | xargs echo
+interval=3600
+color=#A4C2F4
+
+[arch-updates]
+command=bash ./arch-updatable
+interval=3600
+color=#AEEE71
+
+[volume-pipewire]
+command=bash ./pipewire-volume
+interval=persist
+SUBSCRIBE=1
+USE_ALSA_NAME=1
+
+# Update time every 5 seconds
+[time]
+command=date +%T
+interval=5

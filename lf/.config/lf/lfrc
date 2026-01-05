@@ -1,0 +1,2 @@
+map o open $f
+set previewer ~/.config/lf/previewSandbox.sh
