@@ -178,8 +178,8 @@ bindsym F1 floating toggle
 bindsym $mod+w exec --no-startup-id dmenu-bookmarks
 bindsym $mod+b exec --no-startup-id add-to-bookmark
 
-gaps inner 5
-gaps outer 10
+# gaps inner 5
+# gaps outer 10
 smart_gaps on
 
 # Start i3bar to display a workspace bar (plus the system information i3status
@@ -203,7 +203,7 @@ bar {
 exec_always --no-startup-id feh --bg-fill ~/Pictures/wallpapers/wallpaper.jpg
 exec_always --no-startup-id dunst ~/.config/dunst/dunstrc
 exec_always --no-startup-id picom
-exec_always --no-startup-id volumeicon
+exec --no-startup-id volumeicon
 
 
 
