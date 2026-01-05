@@ -98,10 +98,9 @@ require('lazy').setup({
         'xiyaowong/transparent.nvim',
         lazy = true,
         cmd = { 'TransparentEnable', 'TransparentToggle' },
-        event = 'VimEnter',
-        config = function()
-            vim.cmd('TransparentEnable')
-        end,
+        exclude_groups = { 'StatusLine', 'StatusLineNC' },
+        -- event = 'VimEnter',
+        -- config = function() vim.cmd('TransparentEnable') end,
     },
 
     -- Telescope (replaces fzf.vim with better LSP integration)
@@ -248,7 +247,7 @@ require('lazy').setup({
             require('lualine').setup({
                 options = {
                     -- theme = 'solarized_dark',
-                    theme = 'codedark',
+                    theme = 'moonfly',
                     component_separators = '',
                     section_separators = '',
                 },
