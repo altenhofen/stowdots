@@ -164,4 +164,4 @@ configuration {
       sorting-method:    "name";
   }
 }
-@theme "solarized"
+@theme "./onedark"
