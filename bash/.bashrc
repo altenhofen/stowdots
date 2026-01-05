@@ -34,7 +34,8 @@ fi
 if [ -f /etc/bash_completion.d/git-prompt ]; then
 source /etc/bash_completion.d/git-prompt
 fi
-
+alias caddylocal='caddy file-server --listen :8080'
+alias uvall='uv sync --all-packages'
 alias less='less --RAW-CONTROL-CHARS'
 alias ls='ls --color ${LS_OPTS}'
 alias grep='rg -uuu -p'

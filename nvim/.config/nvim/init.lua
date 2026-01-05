@@ -86,8 +86,10 @@ require('lazy').setup({
         priority = 1000,
         config = function()
             vim.o.background = 'dark'
-            require('solarized').setup({})
-            vim.cmd.colorscheme('solarized')
+            require('solarized').setup({
+            })
+            -- vim.cmd.colorscheme('solarized')
+            vim.cmd.colorscheme('default')
         end,
     },
 
@@ -96,6 +98,10 @@ require('lazy').setup({
         'xiyaowong/transparent.nvim',
         lazy = true,
         cmd = { 'TransparentEnable', 'TransparentToggle' },
+        event = 'VimEnter',
+        config = function()
+            vim.cmd('TransparentEnable')
+        end,
     },
 
     -- Telescope (replaces fzf.vim with better LSP integration)
@@ -241,7 +247,8 @@ require('lazy').setup({
         config = function()
             require('lualine').setup({
                 options = {
-                    theme = 'solarized_dark',
+                    -- theme = 'solarized_dark',
+                    theme = 'codedark',
                     component_separators = '',
                     section_separators = '',
                 },
@@ -321,7 +328,7 @@ require('mason').setup()
 require('mason-lspconfig').setup({
     ensure_installed = {
         'lua_ls',
-        'pyright',
+        'basedpyright',
         'ts_ls',
         'bashls',
         'jsonls',
