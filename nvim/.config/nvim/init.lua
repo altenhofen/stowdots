@@ -81,26 +81,28 @@ require('lazy').setup({
         end,
     },
     {
-        'maxmx03/solarized.nvim',
-        lazy = false,
-        priority = 1000,
+        "rose-pine/neovim",
+        name = "rose-pine",
         config = function()
-            vim.o.background = 'dark'
-            require('solarized').setup({
+            require('rose-pine').setup({
+                disable_background = true,
             })
-            -- vim.cmd.colorscheme('solarized')
-            vim.cmd.colorscheme('default')
-        end,
-    },
 
+            vim.cmd("colorscheme rose-pine")
+            color = color or "rose-pine"
+            vim.cmd.colorscheme(color)
+
+            vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
+            vim.api.nvim_set_hl(0, "NormalFloat", { bg = "none" })
+        end
+    },
     -- Transparency (optional, enable if you want)
     {
         'xiyaowong/transparent.nvim',
         lazy = true,
         cmd = { 'TransparentEnable', 'TransparentToggle' },
-        exclude_groups = { 'StatusLine', 'StatusLineNC' },
-        -- event = 'VimEnter',
-        -- config = function() vim.cmd('TransparentEnable') end,
+        event = 'VimEnter',
+        config = function() vim.cmd('TransparentEnable') end,
     },
 
     -- Telescope (replaces fzf.vim with better LSP integration)
@@ -735,8 +737,6 @@ vim.api.nvim_create_autocmd("BufWritePre", {
         end
     end
 })
-
-
 -- Print a subtle message on startup (optional, remove if annoying)
 vim.api.nvim_create_autocmd('VimEnter', {
     callback = function()
