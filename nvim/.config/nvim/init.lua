@@ -96,6 +96,23 @@ require('lazy').setup({
             vim.api.nvim_set_hl(0, "NormalFloat", { bg = "none" })
         end
     },
+    {
+        'stevearc/oil.nvim',
+        ---@module 'oil'
+        ---@type oil.SetupOpts
+        opts = {},
+        config = function()
+            require("oil").setup({
+                default_file_explorer = true,
+            })
+            vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
+        end,
+        -- Optional dependencies
+        dependencies = { { "nvim-mini/mini.icons", opts = {} } },
+        -- dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if you prefer nvim-web-devicons
+        -- Lazy loading is not recommended because it is very tricky to make it work correctly in all situations.
+        lazy = false,
+    },
     -- Transparency (optional, enable if you want)
     {
         'xiyaowong/transparent.nvim',
@@ -522,6 +539,9 @@ local autocmd = vim.api.nvim_create_autocmd
 autocmd('BufWritePre', {
     group = augroup('auto_create_dir', { clear = true }),
     callback = function()
+        if vim.bo.buftype ~= '' then
+            return
+        end
         local dir = vim.fn.expand('<afile>:p:h')
         if vim.fn.isdirectory(dir) == 0 then
             vim.fn.mkdir(dir, 'p')
