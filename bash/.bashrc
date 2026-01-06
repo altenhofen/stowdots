@@ -35,6 +35,7 @@ if [ -f /etc/bash_completion.d/git-prompt ]; then
 source /etc/bash_completion.d/git-prompt
 fi
 
+alias cat='batcat -pP'
 alias gradlesync='./gradlew --refresh-dependencies help'
 alias caddylocal='caddy file-server --listen :8080'
 alias uvall='uv sync --all-packages'
