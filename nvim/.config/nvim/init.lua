@@ -60,6 +60,52 @@ vim.g.netrw_banner = 0
 vim.g.netrw_liststyle = 3
 
 --------------------------------------------------------------------------------
+-- LSP CONFIGURATION
+--------------------------------------------------------------------------------
+
+-- Diagnostic display settings
+vim.diagnostic.config({
+    virtual_text = true,
+    signs = true,
+    underline = true,
+    update_in_insert = false,
+    float = {
+        border = 'rounded',
+        source = true,
+    },
+})
+
+-- Common on_attach function for all LSP servers
+local on_attach = function(client, bufnr)
+    local opts = { buffer = bufnr, silent = true }
+
+    -- Navigation
+    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
+    vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
+    vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
+    vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
+    vim.keymap.set('n', 'go', vim.lsp.buf.type_definition, opts)
+    vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
+    vim.keymap.set('n', 'gs', vim.lsp.buf.signature_help, opts)
+
+    -- Actions
+    vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, opts)
+    vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, opts)
+    vim.keymap.set("n", "ga", vim.lsp.buf.code_action, { buffer = true })
+    vim.keymap.set({ 'n', 'v' }, '<leader>f', function()
+        vim.lsp.buf.format({ async = true })
+    end, opts)
+
+    -- Diagnostics
+    vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, opts)
+    vim.keymap.set('n', ']d', vim.diagnostic.goto_next, opts)
+    vim.keymap.set('n', '<leader>d', vim.diagnostic.open_float, opts)
+    vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, opts)
+end
+
+-- Capabilities for completion
+
+--------------------------------------------------------------------------------
 -- PLUGINS
 --------------------------------------------------------------------------------
 
@@ -201,9 +247,6 @@ require('lazy').setup({
     { 'williamboman/mason.nvim' },
     { 'williamboman/mason-lspconfig.nvim' },
 
-    -- Java specific (proper jdtls support)
-    { 'mfussenegger/nvim-jdtls' },
-
     -- Completion
     {
         'hrsh7th/nvim-cmp',
@@ -292,61 +335,106 @@ require('lazy').setup({
             })
         end,
     },
+    {
+        'mfussenegger/nvim-jdtls',
+        ft = { 'java' },
+        config = function()
+            local jdtls = require('jdtls')
+
+            local root_markers = { 'pom.xml', 'build.gradle', 'gradlew', '.git' }
+            local root_dir = require('jdtls.setup').find_root(root_markers)
+            if not root_dir then
+                vim.notify('jdtls: no project root found', vim.log.levels.WARN)
+                return
+            end
+
+            local home          = vim.loop.os_homedir()
+            local workspace_dir = home .. '/.cache/jdtls-workspace/'
+                .. vim.fn.fnamemodify(root_dir, ':p:h:t')
+
+            local jdtls_path    = home .. '/.local/share/nvim/mason/packages/jdtls'
+            local lombok_path   = home .. '/.local/share/nvim/mason/packages/lombok-nightly/lombok.jar'
+            local java21        = home .. '/.sdkman/candidates/java/21.0.5-tem/bin/java'
+
+            if vim.fn.executable(java21) == 0 then
+                vim.notify('Java 21 not found at: ' .. java21, vim.log.levels.ERROR)
+                return
+            end
+
+            local config = {
+                cmd = {
+                    java21,
+                    '-Declipse.application=org.eclipse.jdt.ls.core.id1',
+                    '-Dosgi.bundles.defaultStartLevel=4',
+                    '-Declipse.product=org.eclipse.jdt.ls.core.product',
+                    '-Dlog.protocol=true',
+                    '-Dlog.level=ALL',
+                    '-Xmx2g',
+                    '--add-modules=ALL-SYSTEM',
+                    '--add-opens', 'java.base/java.util=ALL-UNNAMED',
+                    '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
+                    '-javaagent:' .. lombok_path,
+                    '-jar', vim.fn.glob(jdtls_path .. '/plugins/org.eclipse.equinox.launcher_*.jar'),
+                    '-configuration', jdtls_path .. '/config_linux', -- change for mac/win
+                    '-data', workspace_dir,
+                },
+                root_dir = root_dir,
+                settings = {
+                    java = {
+                        configuration = {
+                            updateBuildConfiguration = 'interactive',
+                            runtimes = {
+                                {
+                                    name = 'JavaSE-17',
+                                    path = home .. '/.sdkman/candidates/java/17.0.10-tem',
+                                    default = true,
+                                },
+                                {
+                                    name = 'JavaSE-21',
+                                    path = home .. '/.sdkman/candidates/java/21.0.5-tem',
+                                },
+                            },
+                        },
+                        eclipse       = { downloadSources = true },
+                        maven         = { downloadSources = true },
+                        format        = { enabled = true },
+                        completion    = {
+                            favoriteStaticMembers = {
+                                'org.junit.Assert.*',
+                                'org.junit.jupiter.api.Assertions.*',
+                                'org.mockito.Mockito.*',
+                            },
+                        },
+                    },
+                },
+                capabilities = capabilities,
+                on_attach = function(client, bufnr)
+                    on_attach(client, bufnr)
+
+                    local opts = { buffer = bufnr, silent = true }
+                    vim.keymap.set('n', '<leader>oi', jdtls.organize_imports, opts)
+                    vim.keymap.set('n', '<leader>ev', jdtls.extract_variable, opts)
+                    vim.keymap.set('v', '<leader>ev', function() jdtls.extract_variable(true) end, opts)
+                    vim.keymap.set('v', '<leader>em', function() jdtls.extract_method(true) end, opts)
+                    vim.keymap.set('n', '<leader>tc', jdtls.test_class, opts)
+                    vim.keymap.set('n', '<leader>tm', jdtls.test_nearest_method, opts)
+                end,
+            }
+
+            jdtls.start_or_attach(config)
+        end,
+    }
 })
 
---------------------------------------------------------------------------------
--- LSP CONFIGURATION
---------------------------------------------------------------------------------
 
--- Diagnostic display settings
-vim.diagnostic.config({
-    virtual_text = true,
-    signs = true,
-    underline = true,
-    update_in_insert = false,
-    float = {
-        border = 'rounded',
-        source = true,
-    },
-})
-
--- Common on_attach function for all LSP servers
-local on_attach = function(client, bufnr)
-    local opts = { buffer = bufnr, silent = true }
-
-    -- Navigation
-    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
-    vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
-    vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
-    vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
-    vim.keymap.set('n', 'go', vim.lsp.buf.type_definition, opts)
-    vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
-    vim.keymap.set('n', 'gs', vim.lsp.buf.signature_help, opts)
-
-    -- Actions
-    vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, opts)
-    vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, opts)
-    vim.keymap.set("n", "ga", vim.lsp.buf.code_action, { buffer = true })
-    vim.keymap.set({ 'n', 'v' }, '<leader>f', function()
-        vim.lsp.buf.format({ async = true })
-    end, opts)
-
-    -- Diagnostics
-    vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, opts)
-    vim.keymap.set('n', ']d', vim.diagnostic.goto_next, opts)
-    vim.keymap.set('n', '<leader>d', vim.diagnostic.open_float, opts)
-    vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, opts)
-end
-
--- Capabilities for completion
 local capabilities = require('cmp_nvim_lsp').default_capabilities()
-
 -- Mason setup
 require('mason').setup()
 require('mason-lspconfig').setup({
     ensure_installed = {
         'lua_ls',
         'basedpyright',
+        'jdtls',
         'ts_ls',
         'bashls',
         'jsonls',
@@ -600,152 +688,112 @@ autocmd('VimResized', {
 -- USER COMMANDS
 --------------------------------------------------------------------------------
 
--- Java class creator (improved)
-vim.api.nvim_create_user_command('Jnew', function(opts)
-    local class_name = opts.args
-    if class_name == '' then
-        print('Usage: :Jnew ClassName')
-        return
-    end
-
-    local current_dir = vim.fn.expand('%:p:h')
-    local path = current_dir .. '/' .. class_name .. '.java'
-
-    vim.cmd('e ' .. path)
-
-    local package = current_dir:match('java/(.+)$')
-    if package then
-        package = package:gsub('/', '.')
-        local template = string.format([[
-package %s;
-
-public class %s {
-
-}
-]], package, class_name)
-        vim.api.nvim_buf_set_lines(0, 0, -1, false, vim.split(template, '\n'))
-        vim.cmd('normal! 5ggO') -- Go to line 5, open line above
-        vim.cmd('startinsert')  -- Enter insert mode
-    end
-end, { nargs = 1, desc = 'Create new Java class' })
-
--- Quick config edit
-vim.api.nvim_create_user_command('Config', function()
-    vim.cmd('e $MYVIMRC')
-end, { desc = 'Edit neovim config' })
-
--- Source config
-vim.api.nvim_create_user_command('Source', function()
-    vim.cmd('source $MYVIMRC')
-    print('Config reloaded!')
-end, { desc = 'Reload neovim config' })
-
 --------------------------------------------------------------------------------
 -- JAVA SPECIFIC (ftplugin alternative - inline)
 --------------------------------------------------------------------------------
-
-autocmd('FileType', {
-    group = augroup('java_setup', { clear = true }),
-    pattern = 'java',
-    callback = function()
-        local jdtls_ok, jdtls = pcall(require, 'jdtls')
-        if not jdtls_ok then
-            return
-        end
-
-        local root_markers = { 'pom.xml', 'build.gradle', 'gradlew', '.git' }
-        local root_dir = require('jdtls.setup').find_root(root_markers)
-
-        if not root_dir then
-            return
-        end
-
-        local home = os.getenv('HOME')
-        local workspace_dir = home .. '/.cache/jdtls-workspace/'
-            .. vim.fn.fnamemodify(root_dir, ':p:h:t')
-
-        local jdtls_path = home .. '/.local/share/nvim/mason/packages/jdtls'
-        local lombok_path = home .. '/.local/share/nvim/mason/packages/lombok-nightly/lombok.jar'
-
-        -- IMPORTANT: Use Java 21 to run jdtls itself
-        local java21 = home .. '/.sdkman/candidates/java/21.0.5-tem/bin/java'
-
-        -- Check if paths exist
-        if vim.fn.executable(java21) == 0 then
-            vim.notify('Java 21 not found at: ' .. java21, vim.log.levels.ERROR)
-            return
-        end
-
-        if vim.fn.isdirectory(jdtls_path) == 0 then
-            vim.notify('jdtls not installed. Run :MasonInstall jdtls', vim.log.levels.WARN)
-            return
-        end
-
-        local config = {
-            cmd = {
-                java21,
-                '-Declipse.application=org.eclipse.jdt.ls.core.id1',
-                '-Dosgi.bundles.defaultStartLevel=4',
-                '-Declipse.product=org.eclipse.jdt.ls.core.product',
-                '-Dlog.protocol=true',
-                '-Dlog.level=ALL',
-                '-Xmx2g',
-                '--add-modules=ALL-SYSTEM',
-                '--add-opens', 'java.base/java.util=ALL-UNNAMED',
-                '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
-                '-javaagent:' .. lombok_path,
-                '-jar', vim.fn.glob(jdtls_path .. '/plugins/org.eclipse.equinox.launcher_*.jar'),
-                '-configuration', jdtls_path .. '/config_linux',
-                '-data', workspace_dir,
-            },
-            root_dir = root_dir,
-            settings = {
-                java = {
-                    configuration = {
-                        updateBuildConfiguration = 'interactive',
-                        -- Multiple Java versions for different projects
-                        runtimes = {
-                            {
-                                name = 'JavaSE-17',
-                                path = home .. '/.sdkman/candidates/java/17.0.9-tem',
-                                default = true,
-                            },
-                            {
-                                name = 'JavaSE-21',
-                                path = home .. '/.sdkman/candidates/java/21.0.5-tem',
-                            },
-                        },
-                    },
-                    eclipse = { downloadSources = true },
-                    maven = { downloadSources = true },
-                    format = { enabled = true },
-                    completion = {
-                        favoriteStaticMembers = {
-                            'org.junit.Assert.*',
-                            'org.junit.jupiter.api.Assertions.*',
-                            'org.mockito.Mockito.*',
-                        },
-                    },
-                },
-            },
-            capabilities = capabilities,
-            on_attach = function(client, bufnr)
-                on_attach(client, bufnr)
-
-                local opts = { buffer = bufnr, silent = true }
-                vim.keymap.set('n', '<leader>oi', jdtls.organize_imports, opts)
-                vim.keymap.set('n', '<leader>ev', jdtls.extract_variable, opts)
-                vim.keymap.set('v', '<leader>ev', function() jdtls.extract_variable(true) end, opts)
-                vim.keymap.set('v', '<leader>em', function() jdtls.extract_method(true) end, opts)
-                vim.keymap.set('n', '<leader>tc', jdtls.test_class, opts)
-                vim.keymap.set('n', '<leader>tm', jdtls.test_nearest_method, opts)
-            end,
-        }
-
-        jdtls.start_or_attach(config)
-    end,
-})
-
+--
+-- autocmd('FileType', {
+--     group = augroup('java_setup', { clear = true }),
+--     pattern = 'java',
+--     callback = function()
+--         local jdtls_ok, jdtls = pcall(require, 'jdtls')
+--         if not jdtls_ok then
+--             return
+--         end
+--
+--         local root_markers = { 'pom.xml', 'build.gradle', 'gradlew', '.git' }
+--         local root_dir = require('jdtls.setup').find_root(root_markers)
+--
+--         if not root_dir then
+--             return
+--         end
+--
+--         local home = os.getenv('HOME')
+--         local workspace_dir = home .. '/.cache/jdtls-workspace/'
+--             .. vim.fn.fnamemodify(root_dir, ':p:h:t')
+--
+--         local jdtls_path = home .. '/.local/share/nvim/mason/packages/jdtls'
+--         local lombok_path = home .. '/.local/share/nvim/mason/packages/lombok-nightly/lombok.jar'
+--
+--         -- IMPORTANT: Use Java 21 to run jdtls itself
+--         local java21 = home .. '/.sdkman/candidates/java/21.0.5-tem/bin/java'
+--
+--         -- Check if paths exist
+--         if vim.fn.executable(java21) == 0 then
+--             vim.notify('Java 21 not found at: ' .. java21, vim.log.levels.ERROR)
+--             return
+--         end
+--
+--         if vim.fn.isdirectory(jdtls_path) == 0 then
+--             vim.notify('jdtls not installed. Run :MasonInstall jdtls', vim.log.levels.WARN)
+--             return
+--         end
+--
+--         local config = {
+--             cmd = {
+--                 java21,
+--                 '-Declipse.application=org.eclipse.jdt.ls.core.id1',
+--                 '-Dosgi.bundles.defaultStartLevel=4',
+--                 '-Declipse.product=org.eclipse.jdt.ls.core.product',
+--                 '-Dlog.protocol=true',
+--                 '-Dlog.level=ALL',
+--                 '-Xmx2g',
+--                 '--add-modules=ALL-SYSTEM',
+--                 '--add-opens', 'java.base/java.util=ALL-UNNAMED',
+--                 '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
+--                 '-javaagent:' .. lombok_path,
+--                 '-jar', vim.fn.glob(jdtls_path .. '/plugins/org.eclipse.equinox.launcher_*.jar'),
+--                 '-configuration', jdtls_path .. '/config_linux',
+--                 '-data', workspace_dir,
+--             },
+--             root_dir = root_dir,
+--             settings = {
+--                 java = {
+--                     configuration = {
+--                         updateBuildConfiguration = 'interactive',
+--                         -- Multiple Java versions for different projects
+--                         runtimes = {
+--                             {
+--                                 name = 'JavaSE-17',
+--                                 path = home .. '/.sdkman/candidates/java/17.0.9-tem',
+--                                 default = true,
+--                             },
+--                             {
+--                                 name = 'JavaSE-21',
+--                                 path = home .. '/.sdkman/candidates/java/21.0.5-tem',
+--                             },
+--                         },
+--                     },
+--                     eclipse = { downloadSources = true },
+--                     maven = { downloadSources = true },
+--                     format = { enabled = true },
+--                     completion = {
+--                         favoriteStaticMembers = {
+--                             'org.junit.Assert.*',
+--                             'org.junit.jupiter.api.Assertions.*',
+--                             'org.mockito.Mockito.*',
+--                         },
+--                     },
+--                 },
+--             },
+--             capabilities = capabilities,
+--             on_attach = function(client, bufnr)
+--                 on_attach(client, bufnr)
+--
+--                 local opts = { buffer = bufnr, silent = true }
+--                 vim.keymap.set('n', '<leader>oi', jdtls.organize_imports, opts)
+--                 vim.keymap.set('n', '<leader>ev', jdtls.extract_variable, opts)
+--                 vim.keymap.set('v', '<leader>ev', function() jdtls.extract_variable(true) end, opts)
+--                 vim.keymap.set('v', '<leader>em', function() jdtls.extract_method(true) end, opts)
+--                 vim.keymap.set('n', '<leader>tc', jdtls.test_class, opts)
+--                 vim.keymap.set('n', '<leader>tm', jdtls.test_nearest_method, opts)
+--             end,
+--         }
+--
+--         jdtls.start_or_attach(config)
+--     end,
+-- })
+--
 -- format on save
 vim.api.nvim_create_autocmd("BufWritePre", {
     callback = function()
