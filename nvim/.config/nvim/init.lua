@@ -234,6 +234,7 @@ require('lazy').setup({
                     "java", "python", "javascript", "typescript",
                     "bash", "json", "yaml",
                     "html", "css", "sql",
+                    "go",
                     "markdown", "markdown_inline",
                 },
                 highlight = { enable = true },
@@ -439,6 +440,7 @@ require('mason-lspconfig').setup({
         'bashls',
         'jsonls',
         'yamlls',
+        'gopls',
         -- java doesnt use mason-lspconfig
     },
     handlers = {

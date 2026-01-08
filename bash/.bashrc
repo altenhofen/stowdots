@@ -35,6 +35,7 @@ if [ -f /etc/bash_completion.d/git-prompt ]; then
 source /etc/bash_completion.d/git-prompt
 fi
 
+alias devboot='./gradlew build --continuous'
 alias cat='batcat -pP'
 alias gradlesync='./gradlew --refresh-dependencies help'
 alias caddylocal='caddy file-server --listen :8080'
@@ -116,7 +117,7 @@ dev () {
 }
 
 
-export PATH=$PATH:$HOME/bin:$HOME/.local/bin
+export PATH=$PATH:$HOME/bin:$HOME/.local/bin:/opt/go/bin:$HOME/go/bin
 export EDITOR='nvim'
 export TERM=screen-256color
 export TERMINAL=gnome-terminal
