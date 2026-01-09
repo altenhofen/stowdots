@@ -167,7 +167,7 @@ require('lazy').setup({
         event = 'VimEnter',
         config = function() vim.cmd('TransparentEnable') end,
     },
-
+    { 'nvim-telescope/telescope-ui-select.nvim' },
     -- Telescope (replaces fzf.vim with better LSP integration)
     {
         'nvim-telescope/telescope.nvim',
@@ -204,9 +204,9 @@ require('lazy').setup({
             })
 
             telescope.load_extension('fzf')
+            telescope.load_extension('ui-select')
         end,
     },
-
     -- Harpoon (quick file switching)
     {
         'ThePrimeagen/harpoon',
@@ -285,7 +285,22 @@ require('lazy').setup({
             })
         end,
     },
-
+    {
+        "ThePrimeagen/refactoring.nvim",
+        dependencies = {
+            "nvim-lua/plenary.nvim",
+            "nvim-treesitter/nvim-treesitter",
+        },
+        lazy = false,
+        config = function()
+            require('refactoring').setup()
+            vim.keymap.set({ "n", "x" }, "<leader>rr",
+                function()
+                    require('telescope').extensions.refactoring.refactors()
+                end)
+        end,
+        opts = {},
+    },
     -- Autopairs
     {
         'windwp/nvim-autopairs',
