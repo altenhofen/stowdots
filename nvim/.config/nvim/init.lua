@@ -470,7 +470,10 @@ require('mason-lspconfig').setup({
         end,
     },
 })
-
+vim.lsp.config.gopls = {
+    on_attach = on_attach,
+    capabilities = capabilities,
+}
 --------------------------------------------------------------------------------
 -- COMPLETION (nvim-cmp)
 --------------------------------------------------------------------------------
