@@ -707,21 +707,120 @@ autocmd('VimResized', {
         vim.cmd('tabdo wincmd =')
     end,
 })
+local function format_changed_lines()
+    -- Check for gitsigns
+    local gs_ok, gitsigns = pcall(require, "gitsigns")
+    if not gs_ok then
+        vim.notify("gitsigns is required", vim.log.levels.ERROR)
+        return
+    end
 
--- format on save
-vim.api.nvim_create_autocmd("BufWritePre", {
-    callback = function()
-        local mode = vim.api.nvim_get_mode().mode
-        local filetype = vim.bo.filetype
-        if vim.bo.modified == true and mode == 'n' and filetype ~= "oil" then
-            vim.cmd('lua vim.lsp.buf.format()')
-        else
+    local bufnr = vim.api.nvim_get_current_buf()
+
+    -- Get hunks from gitsigns
+    local hunks = gitsigns.get_hunks(bufnr)
+    if not hunks or #hunks == 0 then
+        vim.notify("No changes to format", vim.log.levels.INFO)
+        return
+    end
+
+    -- Check for LSP range formatting support
+    local clients = vim.lsp.get_clients({
+        bufnr = bufnr,
+        method = "textDocument/rangeFormatting",
+    })
+    if #clients == 0 then
+        vim.notify("No LSP with range formatting support", vim.log.levels.WARN)
+        return
+    end
+
+    -- Collect valid ranges (only hunks with added/changed lines)
+    local ranges = {}
+    for _, hunk in ipairs(hunks) do
+        if hunk.added and hunk.added.count > 0 then
+            table.insert(ranges, {
+                start_line = hunk.added.start,
+                end_line = hunk.added.start + hunk.added.count - 1,
+            })
         end
     end
+
+    if #ranges == 0 then
+        vim.notify("No lines to format (only deletions)", vim.log.levels.INFO)
+        return
+    end
+
+    -- Sort descending to format bottom-up (preserves line numbers)
+    table.sort(ranges, function(a, b)
+        return a.start_line > b.start_line
+    end)
+
+    -- Format each range
+    for _, range in ipairs(ranges) do
+        local end_line_text = vim.api.nvim_buf_get_lines(
+            bufnr,
+            range.end_line - 1,
+            range.end_line,
+            false
+        )[1] or ""
+
+        vim.lsp.buf.format({
+            async = false,
+            bufnr = bufnr,
+            range = {
+                ["start"] = { range.start_line, 0 },
+                ["end"] = { range.end_line, #end_line_text },
+            },
+        })
+    end
+
+    vim.notify(string.format("Formatted %d hunk(s)", #ranges), vim.log.levels.INFO)
+end
+
+-- Create the command
+vim.api.nvim_create_user_command("FormatChangedLines", format_changed_lines, {
+    desc = "Format only git-changed lines using LSP",
 })
--- Print a subtle message on startup (optional, remove if annoying)
-vim.api.nvim_create_autocmd('VimEnter', {
-    callback = function()
-        print('Config loaded. Press <Space>fk to see keymaps.')
-    end,
+
+-- Optional keymap
+vim.keymap.set("n", "<leader>cf", format_changed_lines, { desc = "Format changed lines" })
+
+vim.api.nvim_create_autocmd("BufWritePre", {
+  group = vim.api.nvim_create_augroup("format_on_save", { clear = true }),
+  callback = function(args)
+    local bufnr = args.buf
+
+    -- Check if LSP formatter exists
+    if #vim.lsp.get_clients({ bufnr = bufnr, method = "textDocument/formatting" }) == 0 then
+      return
+    end
+
+    -- Try gitsigns for changed-line formatting
+    local ok, gitsigns = pcall(require, "gitsigns")
+    local hunks = ok and gitsigns.get_hunks(bufnr)
+
+    if hunks and #hunks > 0 then
+      -- Format only changed lines (bottom-up to preserve line numbers)
+      for i = #hunks, 1, -1 do
+        local hunk = hunks[i]
+        if hunk.added and hunk.added.count > 0 then
+          local start_line = hunk.added.start
+          local end_line = start_line + hunk.added.count - 1
+          local end_col = #(vim.api.nvim_buf_get_lines(bufnr, end_line - 1, end_line, false)[1] or "")
+
+          vim.lsp.buf.format({
+            async = false,
+            bufnr = bufnr,
+            range = {
+              ["start"] = { start_line, 0 },
+              ["end"] = { end_line, end_col },
+            },
+          })
+        end
+      end
+    else
+      -- No git, new file, or no changes: format entire buffer
+      vim.lsp.buf.format({ async = false, bufnr = bufnr })
+    end
+  end,
 })
