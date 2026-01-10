@@ -47,6 +47,9 @@ alias pbcopy='xclip -selection clipboard'
 alias pbpaste='xclip -selection clipboard -o'
 alias v='nvim'
 alias vi='nvim'
+alias gs='git status -sb'
+alias gc='git commit'
+alias ga='git add'
 
 
 if ! shopt -oq posix; then
@@ -117,7 +120,7 @@ dev () {
 }
 
 
-export PATH=$PATH:$HOME/bin:$HOME/.local/bin:/opt/go/bin:$HOME/go/bin
+export PATH=$PATH:$HOME/bin:$HOME/.local/bin:/opt/go/bin:$HOME/go/bin:$HOME/.rbenv/bin/
 export EDITOR='nvim'
 export TERM=screen-256color
 export TERMINAL=gnome-terminal
@@ -131,3 +134,5 @@ export SDKMAN_DIR="$HOME/.sdkman"
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+eval "$(~/.local/bin/mise activate)"
