@@ -720,7 +720,7 @@ local function format_changed_lines()
     -- Get hunks from gitsigns
     local hunks = gitsigns.get_hunks(bufnr)
     if not hunks or #hunks == 0 then
-        vim.notify("No changes to format", vim.log.levels.INFO)
+        -- vim.notify("No changes to format", vim.log.levels.INFO)
         return
     end
 
@@ -730,7 +730,7 @@ local function format_changed_lines()
         method = "textDocument/rangeFormatting",
     })
     if #clients == 0 then
-        vim.notify("No LSP with range formatting support", vim.log.levels.WARN)
+        -- vim.notify("No LSP with range formatting support", vim.log.levels.WARN)
         return
     end
 
@@ -746,7 +746,7 @@ local function format_changed_lines()
     end
 
     if #ranges == 0 then
-        vim.notify("No lines to format (only deletions)", vim.log.levels.INFO)
+        -- vim.notify("No lines to format (only deletions)", vim.log.levels.INFO)
         return
     end
 
