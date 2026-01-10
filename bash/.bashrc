@@ -35,6 +35,7 @@ if [ -f /etc/bash_completion.d/git-prompt ]; then
 source /etc/bash_completion.d/git-prompt
 fi
 
+alias backup='rsync -avPzh /home/altenhofen/pillow/ altenhofen@minis:/home/altenhofen/pillow/'
 alias devboot='./gradlew build --continuous'
 alias cat='batcat -pP'
 alias gradlesync='./gradlew --refresh-dependencies help'
@@ -100,6 +101,10 @@ extract () {
    else
      echo "'$1' is not a valid file"
    fi
+}
+
+ebook2txt () {
+    pandoc -f epub -t plain -o $2 $1
 }
 
 cdl () {
