@@ -786,41 +786,41 @@ vim.api.nvim_create_user_command("FormatChangedLines", format_changed_lines, {
 vim.keymap.set("n", "<leader>cf", format_changed_lines, { desc = "Format changed lines" })
 
 vim.api.nvim_create_autocmd("BufWritePre", {
-  group = vim.api.nvim_create_augroup("format_on_save", { clear = true }),
-  callback = function(args)
-    local bufnr = args.buf
+    group = vim.api.nvim_create_augroup("format_on_save", { clear = true }),
+    callback = function(args)
+        local bufnr = args.buf
 
-    -- Check if LSP formatter exists
-    if #vim.lsp.get_clients({ bufnr = bufnr, method = "textDocument/formatting" }) == 0 then
-      return
-    end
-
-    -- Try gitsigns for changed-line formatting
-    local ok, gitsigns = pcall(require, "gitsigns")
-    local hunks = ok and gitsigns.get_hunks(bufnr)
-
-    if hunks and #hunks > 0 then
-      -- Format only changed lines (bottom-up to preserve line numbers)
-      for i = #hunks, 1, -1 do
-        local hunk = hunks[i]
-        if hunk.added and hunk.added.count > 0 then
-          local start_line = hunk.added.start
-          local end_line = start_line + hunk.added.count - 1
-          local end_col = #(vim.api.nvim_buf_get_lines(bufnr, end_line - 1, end_line, false)[1] or "")
-
-          vim.lsp.buf.format({
-            async = false,
-            bufnr = bufnr,
-            range = {
-              ["start"] = { start_line, 0 },
-              ["end"] = { end_line, end_col },
-            },
-          })
+        -- Check if LSP formatter exists
+        if #vim.lsp.get_clients({ bufnr = bufnr, method = "textDocument/formatting" }) == 0 then
+            return
         end
-      end
-    else
-      -- No git, new file, or no changes: format entire buffer
-      vim.lsp.buf.format({ async = false, bufnr = bufnr })
-    end
-  end,
+
+        -- Try gitsigns for changed-line formatting
+        local ok, gitsigns = pcall(require, "gitsigns")
+        local hunks = ok and gitsigns.get_hunks(bufnr)
+
+        if hunks and #hunks > 0 then
+            -- Format only changed lines (bottom-up to preserve line numbers)
+            for i = #hunks, 1, -1 do
+                local hunk = hunks[i]
+                if hunk.added and hunk.added.count > 0 then
+                    local start_line = hunk.added.start
+                    local end_line = start_line + hunk.added.count - 1
+                    local end_col = #(vim.api.nvim_buf_get_lines(bufnr, end_line - 1, end_line, false)[1] or "")
+
+                    vim.lsp.buf.format({
+                        async = false,
+                        bufnr = bufnr,
+                        range = {
+                            ["start"] = { start_line, 0 },
+                            ["end"] = { end_line, end_col },
+                        },
+                    })
+                end
+            end
+        else
+            -- No git, new file, or no changes: format entire buffer
+            vim.lsp.buf.format({ async = false, bufnr = bufnr })
+        end
+    end,
 })
