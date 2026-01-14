@@ -27,6 +27,11 @@ if [ -d ~/.bashrc.d ]; then
 fi
 unset rc
 
+
+# macos
+export BASH_SILENCE_DEPRECATION_WARNING=1
+[ -f /Library/Developer/CommandLineTools/usr/share/git-core/git-prompt.sh ] && . /Library/Developer/CommandLineTools/usr/share/git-core/git-prompt.sh
+
 if [ -f /usr/share/git-core/contrib/completion/git-prompt.sh ]; then
 source /usr/share/git-core/contrib/completion/git-prompt.sh
 fi
@@ -134,10 +139,11 @@ export TERMINAL=gnome-terminal
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
-. "$HOME/.cargo/env"
+
+
+[ -f $HOME/.cargo/env ] && source "$HOME/.cargo/env"
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
-eval "$(~/.local/bin/mise activate)"
