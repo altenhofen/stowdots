@@ -111,6 +111,10 @@ end
 
 require('lazy').setup({
     {
+        'Exafunction/windsurf.vim',
+        event = 'BufEnter'
+    },
+    {
         'vyfor/cord.nvim',
         build = ':Cord update',
         -- opts = {}
