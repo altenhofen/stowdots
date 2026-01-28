@@ -88,7 +88,7 @@
 (setq indicate-empty-lines t)
 
 
-(setq-default fill-column 120)
+(setq-default fill-column 80)
 (setq-default auto-fill-function 'do-auto-fill)
 (setq-default display-fill-column-indicator-column 80)
 (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
@@ -189,7 +189,7 @@
   (load-theme 'modus-vivendi t))
 (when (eq system-type 'darwin)
   (load-theme 'ef-melissa-light t))
-(load-theme 'ef-eagle t)
+(load-theme 'ef-kassio t)
 
 
 ;; c#
@@ -730,7 +730,7 @@ Version: 2024-05-20"
   (evil-define-key 'normal 'global
     (kbd "-") 'dirvish-dwim))
 (evil-define-key 'normal global-map (kbd "-") 'dirvish-dwim)
+(evil-define-key 'normal global-map (kbd "gq") 'fill-paragraph)
 
 (provide 'init)
 ;;; init.el ends
-
