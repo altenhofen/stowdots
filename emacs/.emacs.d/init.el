@@ -1,7 +1,7 @@
 ;;; config.el -*- lexical-binding: t; coding: utf-8; -*-
 
 (setq-default load-prefer-newer t)
-
+(setq warning-minimum-level :emergency)
 ;; a hack
 (add-function :after after-focus-change-function
               (defun garbage-collect-maybe ()
@@ -183,14 +183,13 @@
 
 (use-package ef-themes)
 (use-package doom-themes)
-
-
+(use-package consult)
 
 (when (eq system-type 'windows-nt)
   (load-theme 'modus-vivendi t))
 (when (eq system-type 'darwin)
   (load-theme 'ef-melissa-light t))
-(load-theme 'doom-nord t)
+(load-theme 'ef-eagle t)
 
 
 ;; c#
@@ -615,7 +614,7 @@ Version: 2024-05-20"
   :ensure t
   :init (evil-mode 1))
 
-(set-face-attribute 'default nil :font "Cascadia Code" :height 130)
+(set-face-attribute 'default nil :font "BlexMono Nerd Font Medium" :height 110)
 
 ;; basedpyright
 (use-package lsp-pyright
@@ -643,6 +642,94 @@ Version: 2024-05-20"
 (setq lsp-completion-provider :none)
 
 
+;; org roam
+(use-package org-roam
+  :ensure t
+  :custom
+  (org-roam-directory (file-truename "~/roam"))
+  :config
+  (org-roam-db-autosync-mode))
+;; Optional: toggle hidden files with "." like in oil.nvim
+(defun dired-toggle-hidden ()
+  (interactive)
+  (setq dired-listing-switches
+        (if (string-match-p "--all" dired-listing-switches)
+            "-l --group-directories-first --no-group"
+          "-l --almost-all --group-directories-first --no-group"))
+  (revert-buffer))
+
+;; Make SPC o open dirvish in the current buffer's directory (exactly like oil.nvim default behavior)
+(defun dirvish-dwim ()
+  "Open dirvish in current buffer's directory or default directory."
+  (interactive)
+  (dirvish (if (buffer-file-name)
+               (file-name-directory (buffer-file-name))
+             default-directory)))
+
+(use-package general
+  :ensure t
+  :config
+  (general-create-definer my-leader-def
+    :states '(normal insert visual emacs)
+    :prefix "SPC"
+    :non-normal-prefix "M-SPC")
+
+  (my-leader-def
+    "n"   '(:ignore t :which-key "notes")
+    "nf"  '(org-roam-node-find :which-key "find node")
+    "ni"  '(org-roam-node-insert :which-key "insert link")
+    "nc"  '(org-roam-capture :which-key "capture")
+    "nl"  '(org-roam-buffer-toggle :which-key "toggle buffer")
+    "ng"  '(org-roam-graph :which-key "graph")
+    "na"  '(org-roam-alias-add :which-key "add alias")
+    "nr"  '(org-roam-ref-add :which-key "add ref")
+    "nt"  '(org-roam-tag-add :which-key "add tag")
+    "ns"  '(org-roam-db-sync :which-key "sync db")
+    
+    ;; Dailies submenu
+    "nd"  '(:ignore t :which-key "dailies")
+    "ndt" '(org-roam-dailies-goto-today :which-key "today")
+    "ndy" '(org-roam-dailies-goto-yesterday :which-key "yesterday")
+    "ndT" '(org-roam-dailies-goto-tomorrow :which-key "tomorrow")
+    "ndd" '(org-roam-dailies-goto-date :which-key "goto date")
+    "ndc" '(org-roam-dailies-capture-today :which-key "capture today")))
+
+(use-package evil-collection)
+
+(use-package dirvish
+  :ensure t
+  :init
+  (dirvish-override-dired-mode)           ; this line is mandatory
+  :config
+  (dirvish-peek-mode)                     ; optional but beautiful
+  (dirvish-side-follow-mode)              ; optional but very oil.nvim-like
+
+  (evil-collection-define-key 'normal 'dirvish-mode-map
+    "-"    'dirvish-up-directory
+    "RET"  'dirvish-find-entry
+    "o"    'dirvish-find-entry
+    "a"    'dirvish-quick-create
+    "A"    'dirvish-quick-create-directory
+    "d"    'dirvish-quicksort-delete
+    "D"    'dirvish-delete
+    "r"    'dirvish-rename
+    "R"    'dirvish-rename-file-or-directory
+    "yy"   'dirvish-yank
+    "p"    'dirvish-yank
+    "P"    'dirvish-move
+    "x"    'dirvish-cut
+    "c"    'dirvish-copy
+    "q"    'dirvish-quit
+    "."    'dired-toggle-hidden
+    "zh"   'dired-hide-details-mode
+    "TAB"  'dirvish-subtree-toggle
+    "g?"   'dirvish-emacs-show-help
+    "gr"   'revert-buffer)
+
+  ;; Global "-" exactly like oil.nvim
+  (evil-define-key 'normal 'global
+    (kbd "-") 'dirvish-dwim))
+(evil-define-key 'normal global-map (kbd "-") 'dirvish-dwim)
 
 (provide 'init)
 ;;; init.el ends
