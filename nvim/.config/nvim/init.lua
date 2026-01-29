@@ -12,144 +12,11 @@ if not vim.uv.fs_stat(lazypath) then
     print('Done.')
 end
 
-
--- prevent warnings
-local vim = vim
-
 vim.opt.rtp:prepend(lazypath)
-
--- leader
-vim.g.mapleader = ' '
-vim.g.maplocalleader = ' '
-
--- line numbers
-vim.opt.number = true
-vim.opt.relativenumber = true
-
--- tabs and indentation
-vim.opt.tabstop = 4
-vim.opt.shiftwidth = 4
-vim.opt.expandtab = true
-vim.opt.smartindent = true
-
--- basic search
-vim.opt.ignorecase = true
-vim.opt.smartcase = true
-vim.opt.hlsearch = true
-vim.opt.incsearch = true
-
--- Appearance
-vim.opt.termguicolors = true
-vim.opt.signcolumn = 'yes'
-vim.opt.cursorline = true
-vim.opt.scrolloff = 8
-vim.opt.sidescrolloff = 8
-vim.opt.wrap = false
-
--- Behavior
-vim.opt.splitright = true
-vim.opt.splitbelow = true
-vim.opt.clipboard = 'unnamedplus' -- System clipboard
-vim.opt.undofile = true           -- Persistent undo
-vim.opt.swapfile = false          -- No swap files
-vim.opt.updatetime = 250          -- Faster completion
-vim.opt.timeoutlen = 300          -- Faster key sequences
-
--- netwr
-vim.g.netrw_banner = 0
-vim.g.netrw_liststyle = 3
-
---------------------------------------------------------------------------------
--- LSP CONFIGURATION
---------------------------------------------------------------------------------
-
--- Diagnostic display settings
-vim.diagnostic.config({
-    virtual_text = true,
-    signs = true,
-    underline = true,
-    update_in_insert = false,
-    float = {
-        border = 'rounded',
-        source = true,
-    },
-})
-
--- Common on_attach function for all LSP servers
-local on_attach = function(client, bufnr)
-    local opts = { buffer = bufnr, silent = true }
-
-    -- Navigation
-    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
-    vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
-    vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
-    vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
-    vim.keymap.set('n', 'go', vim.lsp.buf.type_definition, opts)
-    vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
-    vim.keymap.set('n', 'gs', vim.lsp.buf.signature_help, opts)
-
-    -- Actions
-    vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, opts)
-    vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, opts)
-    vim.keymap.set("n", "ga", vim.lsp.buf.code_action, { buffer = true })
-    vim.keymap.set({ 'n', 'v' }, '<leader>f', function()
-        vim.lsp.buf.format({ async = true })
-    end, opts)
-
-    -- Diagnostics
-    vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, opts)
-    vim.keymap.set('n', ']d', vim.diagnostic.goto_next, opts)
-    vim.keymap.set('n', '<leader>d', vim.diagnostic.open_float, opts)
-    vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, opts)
-end
-
--- Capabilities for completion
-
---------------------------------------------------------------------------------
--- PLUGINS
---------------------------------------------------------------------------------
 
 require('lazy').setup({
     {
-        'Exafunction/windsurf.vim',
-        event = 'BufEnter'
-    },
-    {
-        'vyfor/cord.nvim',
-        build = ':Cord update',
-        -- opts = {}
-    },
-    {
-        'nvim-tree/nvim-tree.lua',
-        config = function()
-            require('nvim-tree').setup({
-                view = { width = 30 },
-                filters = { dotfiles = false },
-                update_focused_file = { enable = true }
-            })
-            vim.keymap.set('n', '<leader>e', ':NvimTreeToggle<CR>')
-        end,
-    },
-    {
-        "rose-pine/neovim",
-        name = "rose-pine",
-        config = function()
-            require('rose-pine').setup({
-                disable_background = true,
-            })
-
-            vim.cmd("colorscheme rose-pine")
-            color = color or "rose-pine"
-            vim.cmd.colorscheme(color)
-
-            vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
-            vim.api.nvim_set_hl(0, "NormalFloat", { bg = "none" })
-        end
-    },
-    {
         'stevearc/oil.nvim',
-        ---@module 'oil'
-        ---@type oil.SetupOpts
         opts = {},
         config = function()
             require("oil").setup({
@@ -157,22 +24,18 @@ require('lazy').setup({
             })
             vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
         end,
-        -- Optional dependencies
-        dependencies = { { "nvim-mini/mini.icons", opts = {} } },
-        -- dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if you prefer nvim-web-devicons
-        -- Lazy loading is not recommended because it is very tricky to make it work correctly in all situations.
         lazy = false,
     },
-    -- Transparency (optional, enable if you want)
-    {
-        'xiyaowong/transparent.nvim',
-        lazy = true,
-        cmd = { 'TransparentEnable', 'TransparentToggle' },
-        event = 'VimEnter',
-        config = function() vim.cmd('TransparentEnable') end,
-    },
     { 'nvim-telescope/telescope-ui-select.nvim' },
-    -- Telescope (replaces fzf.vim with better LSP integration)
+    { 'windwp/nvim-autopairs', event = "InsertEnter", config = true },
+    {
+        'ThePrimeagen/harpoon',
+        branch = 'harpoon2',
+        dependencies = { 'nvim-lua/plenary.nvim' },
+        config = function()
+            require('harpoon'):setup()
+        end,
+    },
     {
         'nvim-telescope/telescope.nvim',
         branch = '0.1.x',
@@ -211,20 +74,10 @@ require('lazy').setup({
             telescope.load_extension('ui-select')
         end,
     },
-    -- Harpoon (quick file switching)
-    {
-        'ThePrimeagen/harpoon',
-        branch = 'harpoon2',
-        dependencies = { 'nvim-lua/plenary.nvim' },
-        config = function()
-            require('harpoon'):setup()
-        end,
-    },
-
     {
         "nvim-treesitter/nvim-treesitter",
         branch = "master",
-        lazy = false, -- REQUIRED
+        lazy = false,
         build = ":TSUpdate",
         config = function()
             local ok, configs = pcall(require, "nvim-treesitter.configs")
@@ -238,7 +91,7 @@ require('lazy').setup({
                     "java", "python", "javascript", "typescript",
                     "bash", "json", "yaml",
                     "html", "css", "sql",
-                    "go",
+                    "go", "ocaml",
                     "markdown", "markdown_inline",
                 },
                 highlight = { enable = true },
@@ -246,13 +99,9 @@ require('lazy').setup({
             })
         end,
     },
-
-    -- LSP
     { 'neovim/nvim-lspconfig' },
     { 'williamboman/mason.nvim' },
     { 'williamboman/mason-lspconfig.nvim' },
-
-    -- Completion
     {
         'hrsh7th/nvim-cmp',
         dependencies = {
@@ -264,8 +113,6 @@ require('lazy').setup({
             'rafamadriz/friendly-snippets',
         },
     },
-
-    -- Git signs in gutter
     {
         'lewis6991/gitsigns.nvim',
         config = function()
@@ -290,63 +137,6 @@ require('lazy').setup({
         end,
     },
     {
-        "ThePrimeagen/refactoring.nvim",
-        dependencies = {
-            "nvim-lua/plenary.nvim",
-            "nvim-treesitter/nvim-treesitter",
-        },
-        lazy = false,
-        config = function()
-            require('refactoring').setup()
-            vim.keymap.set({ "n", "x" }, "<leader>rr",
-                function()
-                    require('telescope').extensions.refactoring.refactors()
-                end)
-        end,
-        opts = {},
-    },
-    -- Autopairs
-    {
-        'windwp/nvim-autopairs',
-        event = 'InsertEnter',
-        config = function()
-            require('nvim-autopairs').setup({})
-        end,
-    },
-
-    -- Comments (gcc to comment line, gc in visual mode)
-    {
-        'numToStr/Comment.nvim',
-        config = function()
-            require('Comment').setup()
-        end,
-    },
-
-    -- Better status line (optional, minimal)
-    {
-        'nvim-lualine/lualine.nvim',
-        config = function()
-            require('lualine').setup({
-                options = {
-                    -- theme = 'solarized_dark',
-                    theme = 'moonfly',
-                    component_separators = '',
-                    section_separators = '',
-                },
-                sections = {
-                    lualine_a = { 'mode' },
-                    lualine_b = { 'branch' },
-                    lualine_c = { { 'filename', path = 1 } },
-                    lualine_x = { 'diagnostics' },
-                    lualine_y = { 'filetype' },
-                    lualine_z = { 'location' },
-                },
-            })
-        end,
-    },
-
-    -- Which-key (shows available keymaps)
-    {
         'folke/which-key.nvim',
         event = 'VeryLazy',
         config = function()
@@ -355,218 +145,36 @@ require('lazy').setup({
             })
         end,
     },
-    {
-        'mfussenegger/nvim-jdtls',
-        ft = { 'java' },
-        config = function()
-            local jdtls = require('jdtls')
-
-            local root_markers = { 'pom.xml', 'build.gradle', 'gradlew', '.git' }
-            local root_dir = require('jdtls.setup').find_root(root_markers)
-            if not root_dir then
-                vim.notify('jdtls: no project root found', vim.log.levels.WARN)
-                return
-            end
-
-            local home          = vim.loop.os_homedir()
-            local workspace_dir = home .. '/.cache/jdtls-workspace/'
-                .. vim.fn.fnamemodify(root_dir, ':p:h:t')
-
-            local jdtls_path    = home .. '/.local/share/nvim/mason/packages/jdtls'
-            local lombok_path   = home .. '/.local/share/nvim/mason/packages/lombok-nightly/lombok.jar'
-            local java21        = home .. '/.sdkman/candidates/java/21.0.5-tem/bin/java'
-
-            if vim.fn.executable(java21) == 0 then
-                vim.notify('Java 21 not found at: ' .. java21, vim.log.levels.ERROR)
-                return
-            end
-
-            local config = {
-                cmd = {
-                    java21,
-                    '-Declipse.application=org.eclipse.jdt.ls.core.id1',
-                    '-Dosgi.bundles.defaultStartLevel=4',
-                    '-Declipse.product=org.eclipse.jdt.ls.core.product',
-                    '-Dlog.protocol=true',
-                    '-Dlog.level=ALL',
-                    '-Xmx2g',
-                    '--add-modules=ALL-SYSTEM',
-                    '--add-opens', 'java.base/java.util=ALL-UNNAMED',
-                    '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
-                    '-javaagent:' .. lombok_path,
-                    '-jar', vim.fn.glob(jdtls_path .. '/plugins/org.eclipse.equinox.launcher_*.jar'),
-                    '-configuration', jdtls_path .. '/config_linux', -- change for mac/win
-                    '-data', workspace_dir,
-                },
-                root_dir = root_dir,
-                settings = {
-                    java = {
-                        configuration = {
-                            updateBuildConfiguration = 'interactive',
-                            runtimes = {
-                                {
-                                    name = 'JavaSE-17',
-                                    path = home .. '/.sdkman/candidates/java/17.0.10-tem',
-                                    default = true,
-                                },
-                                {
-                                    name = 'JavaSE-21',
-                                    path = home .. '/.sdkman/candidates/java/21.0.5-tem',
-                                },
-                            },
-                        },
-                        eclipse       = { downloadSources = true },
-                        maven         = { downloadSources = true },
-                        format        = { enabled = true },
-                        completion    = {
-                            favoriteStaticMembers = {
-                                'org.junit.Assert.*',
-                                'org.junit.jupiter.api.Assertions.*',
-                                'org.mockito.Mockito.*',
-                            },
-                        },
-                    },
-                },
-                capabilities = capabilities,
-                on_attach = function(client, bufnr)
-                    on_attach(client, bufnr)
-
-                    local opts = { buffer = bufnr, silent = true }
-                    vim.keymap.set('n', '<leader>oi', jdtls.organize_imports, opts)
-                    vim.keymap.set('n', '<leader>ev', jdtls.extract_variable, opts)
-                    vim.keymap.set('v', '<leader>ev', function() jdtls.extract_variable(true) end, opts)
-                    vim.keymap.set('v', '<leader>em', function() jdtls.extract_method(true) end, opts)
-                    vim.keymap.set('n', '<leader>tc', jdtls.test_class, opts)
-                    vim.keymap.set('n', '<leader>tm', jdtls.test_nearest_method, opts)
-                end,
-            }
-
-            jdtls.start_or_attach(config)
-        end,
-    }
 })
+-- theme
+vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
 
+vim.g.mapleader = ' '
+vim.g.maplocalleader = ' '
+vim.opt.number = true
+vim.opt.relativenumber = true
+vim.opt.tabstop = 4
+vim.opt.shiftwidth = 4
+vim.opt.expandtab = true
+vim.opt.smartindent = true
+vim.opt.ignorecase = true
+vim.opt.smartcase = true
+vim.opt.hlsearch = true
+vim.opt.incsearch = true
+vim.opt.termguicolors = true
+vim.opt.signcolumn = 'yes'
+vim.opt.cursorline = true
+vim.opt.scrolloff = 8
+vim.opt.sidescrolloff = 8
+vim.opt.wrap = false
+vim.opt.splitright = true
+vim.opt.splitbelow = true
+vim.opt.clipboard = 'unnamedplus'
+vim.opt.undofile = true
+vim.opt.swapfile = false
+vim.opt.updatetime = 250
+vim.opt.timeoutlen = 300
 
-local capabilities = require('cmp_nvim_lsp').default_capabilities()
--- Mason setup
-require('mason').setup()
-require('mason-lspconfig').setup({
-    ensure_installed = {
-        'lua_ls',
-        'basedpyright',
-        'jdtls',
-        'ts_ls',
-        'bashls',
-        'jsonls',
-        'yamlls',
-        'gopls',
-        -- java doesnt use mason-lspconfig
-    },
-    handlers = {
-        function(server_name)
-            -- Skip jdtls, we handle it separately
-            if server_name == 'jdtls' then return end
-
-            require('lspconfig')[server_name].setup({
-                on_attach = on_attach,
-                capabilities = capabilities,
-            })
-        end,
-
-        -- Lua specific settings
-        ['lua_ls'] = function()
-            require('lspconfig').lua_ls.setup({
-                on_attach = on_attach,
-                capabilities = capabilities,
-                settings = {
-                    Lua = {
-                        diagnostics = { globals = { 'vim' } },
-                        workspace = { checkThirdParty = false },
-                        telemetry = { enable = false },
-                    },
-                },
-            })
-        end,
-    },
-})
-vim.lsp.config.gopls = {
-    on_attach = on_attach,
-    capabilities = capabilities,
-}
-vim.lsp.config.ts_ls = {
-    on_attach = on_attach,
-    capabilities = capabilities,
-}
---------------------------------------------------------------------------------
--- COMPLETION (nvim-cmp)
---------------------------------------------------------------------------------
-
-local cmp = require('cmp')
-local luasnip = require('luasnip')
-
--- Load friendly-snippets
-require('luasnip.loaders.from_vscode').lazy_load()
-
-cmp.setup({
-    snippet = {
-        expand = function(args)
-            luasnip.lsp_expand(args.body)
-        end,
-    },
-    sources = cmp.config.sources({
-        { name = 'nvim_lsp' },
-        { name = 'luasnip' },
-        { name = 'path' },
-    }, {
-        { name = 'buffer' },
-    }),
-    mapping = cmp.mapping.preset.insert({
-        ['<C-p>'] = cmp.mapping.select_prev_item(),
-        ['<C-n>'] = cmp.mapping.select_next_item(),
-        ['<C-u>'] = cmp.mapping.scroll_docs(-4),
-        ['<C-d>'] = cmp.mapping.scroll_docs(4),
-        ['<C-Space>'] = cmp.mapping.complete(),
-        ['<C-e>'] = cmp.mapping.abort(),
-        ['<CR>'] = cmp.mapping.confirm({ select = false }),
-        ['<Tab>'] = cmp.mapping(function(fallback)
-            if cmp.visible() then
-                cmp.select_next_item()
-            elseif luasnip.expand_or_jumpable() then
-                luasnip.expand_or_jump()
-            else
-                fallback()
-            end
-        end, { 'i', 's' }),
-        ['<S-Tab>'] = cmp.mapping(function(fallback)
-            if cmp.visible() then
-                cmp.select_prev_item()
-            elseif luasnip.jumpable(-1) then
-                luasnip.jump(-1)
-            else
-                fallback()
-            end
-        end, { 'i', 's' }),
-    }),
-    formatting = {
-        format = function(entry, vim_item)
-            vim_item.menu = ({
-                nvim_lsp = '[LSP]',
-                luasnip = '[Snip]',
-                buffer = '[Buf]',
-                path = '[Path]',
-            })[entry.source.name]
-            return vim_item
-        end,
-    },
-})
-
--- Integrate autopairs with cmp
-local cmp_autopairs = require('nvim-autopairs.completion.cmp')
-cmp.event:on('confirm_done', cmp_autopairs.on_confirm_done())
-
---------------------------------------------------------------------------------
--- KEYMAPS
---------------------------------------------------------------------------------
 
 local keymap = vim.keymap.set
 local opts = { noremap = true, silent = true }
@@ -631,22 +239,46 @@ keymap('n', '<leader>4', function() harpoon:list():select(4) end, { desc = 'Harp
 keymap('n', '<C-p>', function() harpoon:list():prev() end, { desc = 'Harpoon prev' })
 keymap('n', '<C-n>', function() harpoon:list():next() end, { desc = 'Harpoon next' })
 
--- Quick file explorer (built-in netrw)
--- keymap('n', '<leader>e', ':Explore<CR>', opts)
+-- Diagnostic display settings
+vim.diagnostic.config({
+    virtual_text = true,
+    signs = true,
+    underline = true,
+    update_in_insert = false,
+    float = {
+        border = 'rounded',
+        source = true,
+    },
+})
 
--- Terminal
-keymap('n', '<leader>tt', ':split | terminal<CR>', { desc = 'Terminal horizontal' })
-keymap('n', '<leader>tv', ':vsplit | terminal<CR>', { desc = 'Terminal vertical' })
-keymap('t', '<Esc><Esc>', '<C-\\><C-n>', opts) -- Exit terminal mode
+-- Common on_attach function for all LSP servers
+local on_attach = function(client, bufnr)
+    local opts = { buffer = bufnr, silent = true }
 
--- Quick save and quit
-keymap('n', '<leader>w', ':w<CR>', opts)
-keymap('n', '<leader>W', ':wa<CR>', opts)
-keymap('n', '<leader>x', ':x<CR>', opts)
+    -- Navigation
+    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
+    vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
+    vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
+    vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
+    vim.keymap.set('n', 'go', vim.lsp.buf.type_definition, opts)
+    vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
+    vim.keymap.set('n', 'gs', vim.lsp.buf.signature_help, opts)
 
---------------------------------------------------------------------------------
--- AUTOCOMMANDS
---------------------------------------------------------------------------------
+    -- Actions
+    vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, opts)
+    vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, opts)
+    vim.keymap.set("n", "ga", vim.lsp.buf.code_action, { buffer = true })
+    vim.keymap.set({ 'n', 'v' }, '<leader>f', function()
+        vim.lsp.buf.format({ async = true })
+    end, opts)
+
+    -- Diagnostics
+    vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, opts)
+    vim.keymap.set('n', ']d', vim.diagnostic.goto_next, opts)
+    vim.keymap.set('n', '<leader>d', vim.diagnostic.open_float, opts)
+    vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, opts)
+end
+
 
 local augroup = vim.api.nvim_create_augroup
 local autocmd = vim.api.nvim_create_autocmd
@@ -711,120 +343,101 @@ autocmd('VimResized', {
         vim.cmd('tabdo wincmd =')
     end,
 })
-local function format_changed_lines()
-    -- Check for gitsigns
-    local gs_ok, gitsigns = pcall(require, "gitsigns")
-    if not gs_ok then
-        vim.notify("gitsigns is required", vim.log.levels.ERROR)
-        return
-    end
 
-    local bufnr = vim.api.nvim_get_current_buf()
 
-    -- Get hunks from gitsigns
-    local hunks = gitsigns.get_hunks(bufnr)
-    if not hunks or #hunks == 0 then
-        -- vim.notify("No changes to format", vim.log.levels.INFO)
-        return
-    end
+local cmp = require('cmp')
+local luasnip = require('luasnip')
 
-    -- Check for LSP range formatting support
-    local clients = vim.lsp.get_clients({
-        bufnr = bufnr,
-        method = "textDocument/rangeFormatting",
-    })
-    if #clients == 0 then
-        -- vim.notify("No LSP with range formatting support", vim.log.levels.WARN)
-        return
-    end
+-- Load friendly-snippets
+require('luasnip.loaders.from_vscode').lazy_load()
 
-    -- Collect valid ranges (only hunks with added/changed lines)
-    local ranges = {}
-    for _, hunk in ipairs(hunks) do
-        if hunk.added and hunk.added.count > 0 then
-            table.insert(ranges, {
-                start_line = hunk.added.start,
-                end_line = hunk.added.start + hunk.added.count - 1,
-            })
-        end
-    end
-
-    if #ranges == 0 then
-        -- vim.notify("No lines to format (only deletions)", vim.log.levels.INFO)
-        return
-    end
-
-    -- Sort descending to format bottom-up (preserves line numbers)
-    table.sort(ranges, function(a, b)
-        return a.start_line > b.start_line
-    end)
-
-    -- Format each range
-    for _, range in ipairs(ranges) do
-        local end_line_text = vim.api.nvim_buf_get_lines(
-            bufnr,
-            range.end_line - 1,
-            range.end_line,
-            false
-        )[1] or ""
-
-        vim.lsp.buf.format({
-            async = false,
-            bufnr = bufnr,
-            range = {
-                ["start"] = { range.start_line, 0 },
-                ["end"] = { range.end_line, #end_line_text },
-            },
-        })
-    end
-
-    vim.notify(string.format("Formatted %d hunk(s)", #ranges), vim.log.levels.INFO)
-end
-
--- Create the command
-vim.api.nvim_create_user_command("FormatChangedLines", format_changed_lines, {
-    desc = "Format only git-changed lines using LSP",
-})
-
--- Optional keymap
-vim.keymap.set("n", "<leader>cf", format_changed_lines, { desc = "Format changed lines" })
-
-vim.api.nvim_create_autocmd("BufWritePre", {
-    group = vim.api.nvim_create_augroup("format_on_save", { clear = true }),
-    callback = function(args)
-        local bufnr = args.buf
-
-        -- Check if LSP formatter exists
-        if #vim.lsp.get_clients({ bufnr = bufnr, method = "textDocument/formatting" }) == 0 then
-            return
-        end
-
-        -- Try gitsigns for changed-line formatting
-        local ok, gitsigns = pcall(require, "gitsigns")
-        local hunks = ok and gitsigns.get_hunks(bufnr)
-
-        if hunks and #hunks > 0 then
-            -- Format only changed lines (bottom-up to preserve line numbers)
-            for i = #hunks, 1, -1 do
-                local hunk = hunks[i]
-                if hunk.added and hunk.added.count > 0 then
-                    local start_line = hunk.added.start
-                    local end_line = start_line + hunk.added.count - 1
-                    local end_col = #(vim.api.nvim_buf_get_lines(bufnr, end_line - 1, end_line, false)[1] or "")
-
-                    vim.lsp.buf.format({
-                        async = false,
-                        bufnr = bufnr,
-                        range = {
-                            ["start"] = { start_line, 0 },
-                            ["end"] = { end_line, end_col },
-                        },
-                    })
-                end
+cmp.setup({
+    snippet = {
+        expand = function(args)
+            luasnip.lsp_expand(args.body)
+        end,
+    },
+    sources = cmp.config.sources({
+        { name = 'nvim_lsp' },
+        { name = 'luasnip' },
+        { name = 'path' },
+    }, {
+        { name = 'buffer' },
+    }),
+    mapping = cmp.mapping.preset.insert({
+        ['<C-p>'] = cmp.mapping.select_prev_item(),
+        ['<C-n>'] = cmp.mapping.select_next_item(),
+        ['<C-u>'] = cmp.mapping.scroll_docs(-4),
+        ['<C-d>'] = cmp.mapping.scroll_docs(4),
+        ['<C-Space>'] = cmp.mapping.complete(),
+        ['<C-e>'] = cmp.mapping.abort(),
+        ['<CR>'] = cmp.mapping.confirm({ select = false }),
+        ['<Tab>'] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+                cmp.select_next_item()
+            elseif luasnip.expand_or_jumpable() then
+                luasnip.expand_or_jump()
+            else
+                fallback()
             end
-        else
-            -- No git, new file, or no changes: format entire buffer
-            vim.lsp.buf.format({ async = false, bufnr = bufnr })
-        end
-    end,
+        end, { 'i', 's' }),
+        ['<S-Tab>'] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+                cmp.select_prev_item()
+            elseif luasnip.jumpable(-1) then
+                luasnip.jump(-1)
+            else
+                fallback()
+            end
+        end, { 'i', 's' }),
+    }),
+    formatting = {
+        format = function(entry, vim_item)
+            vim_item.menu = ({
+                nvim_lsp = '[LSP]',
+                luasnip = '[Snip]',
+                buffer = '[Buf]',
+                path = '[Path]',
+            })[entry.source.name]
+            return vim_item
+        end,
+    },
 })
+
+-- Integrate autopairs with cmp
+local cmp_autopairs = require('nvim-autopairs.completion.cmp')
+cmp.event:on('confirm_done', cmp_autopairs.on_confirm_done())
+
+
+local capabilities = require('cmp_nvim_lsp').default_capabilities()
+-- Mason setup
+require('mason').setup()
+require('mason-lspconfig').setup({
+    ensure_installed = {
+        'lua_ls',
+    },
+    handlers = {
+        ['lua_ls'] = function()
+            require('lspconfig').lua_ls.setup({
+                on_attach = on_attach,
+                capabilities = capabilities,
+                settings = {
+                    Lua = {
+                        diagnostics = { globals = { 'vim' } },
+                        workspace = { checkThirdParty = false },
+                        telemetry = { enable = false },
+                    },
+                },
+            })
+        end,
+    },
+})
+
+vim.lsp.config.gopls = {
+    on_attach = on_attach,
+    capabilities = capabilities,
+}
+vim.lsp.config.ts_ls = {
+    on_attach = on_attach,
+    capabilities = capabilities,
+}
