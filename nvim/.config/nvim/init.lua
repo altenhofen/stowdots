@@ -26,10 +26,10 @@ require('lazy').setup({
         end,
         lazy = false,
     },
-    {
-        'Exafunction/windsurf.vim',
-        event = 'BufEnter'
-    },
+    -- {
+    --     'Exafunction/windsurf.vim',
+    --     event = 'BufEnter'
+    -- },
     { 'nvim-telescope/telescope-ui-select.nvim' },
     { 'windwp/nvim-autopairs', event = "InsertEnter", config = true },
     {
