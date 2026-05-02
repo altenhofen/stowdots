@@ -7,6 +7,9 @@ fi
 if [ -f /etc/bash.bashrc ]; then
     . /etc/bash.bashrc
 fi
+if [ -f /usr/share/git/git-prompt.sh ]; then
+    source /usr/share/git/git-prompt.sh
+fi
 
 # User specific environment
 if ! [[ "$PATH" =~ "$HOME/.local/bin:$HOME/bin:$HOME/.cargo/bin" ]]; then
@@ -14,8 +17,6 @@ if ! [[ "$PATH" =~ "$HOME/.local/bin:$HOME/bin:$HOME/.cargo/bin" ]]; then
 fi
 export PATH
 
-# Uncomment the following line if you don't like systemctl's auto-paging feature:
-# export SYSTEMD_PAGER=
 
 # User specific aliases and functions
 if [ -d ~/.bashrc.d ]; then
@@ -27,25 +28,6 @@ if [ -d ~/.bashrc.d ]; then
 fi
 unset rc
 
-
-# macos
-export BASH_SILENCE_DEPRECATION_WARNING=1
-[ -f /Library/Developer/CommandLineTools/usr/share/git-core/git-prompt.sh ] && . /Library/Developer/CommandLineTools/usr/share/git-core/git-prompt.sh
-
-if [ -f /usr/share/git-core/contrib/completion/git-prompt.sh ]; then
-source /usr/share/git-core/contrib/completion/git-prompt.sh
-fi
-
-if [ -f /etc/bash_completion.d/git-prompt ]; then
-source /etc/bash_completion.d/git-prompt
-fi
-
-alias backup='rsync -avPzh /home/altenhofen/pillow/ altenhofen@minis:/home/altenhofen/pillow/'
-alias devboot='./gradlew build --continuous'
-alias cat='batcat -pP'
-alias gradlesync='./gradlew --refresh-dependencies help'
-alias caddylocal='caddy file-server --listen :8080'
-alias uvall='uv sync --all-packages'
 alias less='less --RAW-CONTROL-CHARS'
 alias ls='ls --color ${LS_OPTS}'
 alias grep='rg -uuu -p'
@@ -86,7 +68,6 @@ ${PS_COLOR_NO_COLOR}\n\$ "
 alias vim='nvim'
 alias ll='ls -alFh'
 alias ff='fastfetch'
-alias hyprquit='hyprctl dispatch exit'
 
 extract () {
    if [ -f "$1" ] ; then
@@ -130,21 +111,4 @@ dev () {
 }
 
 
-export PATH=$PATH:$HOME/bin:$HOME/.local/bin:/opt/go/bin:$HOME/go/bin:$HOME/.rbenv/bin/
-export EDITOR='nvim'
-export TERM=screen-256color
-export TERMINAL=gnome-terminal
-
-
-#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
-export SDKMAN_DIR="$HOME/.sdkman"
-[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
-
-
-[ -f $HOME/.cargo/env ] && source "$HOME/.cargo/env"
-
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
-export PATH=$HOME/.opencode/bin:$PATH
+export PATH=$PATH:$HOME/bin:$HOME/.local/bin
