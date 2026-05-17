@@ -28,8 +28,6 @@ if [ -d ~/.bashrc.d ]; then
 fi
 unset rc
 
-alias less='less --RAW-CONTROL-CHARS'
-alias ls='ls --color ${LS_OPTS}'
 alias grep='rg -uuu -p'
 alias pbcopy='xclip -selection clipboard'
 alias pbpaste='xclip -selection clipboard -o'
@@ -48,7 +46,7 @@ if ! shopt -oq posix; then
   fi
 fi
 
-
+. ~/.bashrc.system
 PS_COLOR_RED='\[\033[0;31m\]'
 PS_COLOR_GREEN='\[\033[0;32m\]'
 PS_COLOR_YELLOW='\[\033[0;33m\]'
@@ -112,3 +110,6 @@ dev () {
 
 
 export PATH=$PATH:$HOME/bin:$HOME/.local/bin
+
+# opencode
+export PATH=/home/altenhofen/.opencode/bin:$PATH

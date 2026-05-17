@@ -14,3 +14,7 @@
 [github]
 	user = altenhofen
 
+[includeIf "gitdir:~/work/"]
+    path = ~/.gitconfig-work
+[safe]
+	directory = /home/altenhofen/work/reports
