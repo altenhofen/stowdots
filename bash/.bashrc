@@ -10,6 +10,9 @@ fi
 if [ -f /usr/share/git/git-prompt.sh ]; then
     source /usr/share/git/git-prompt.sh
 fi
+if [ -f /usr/lib/git-core/git-sh-prompt ]; then
+    source /usr/lib/git-core/git-sh-prompt
+fi
 
 # User specific environment
 if ! [[ "$PATH" =~ "$HOME/.local/bin:$HOME/bin:$HOME/.cargo/bin" ]]; then
@@ -46,7 +49,6 @@ if ! shopt -oq posix; then
   fi
 fi
 
-. ~/.bashrc.system
 PS_COLOR_RED='\[\033[0;31m\]'
 PS_COLOR_GREEN='\[\033[0;32m\]'
 PS_COLOR_YELLOW='\[\033[0;33m\]'
