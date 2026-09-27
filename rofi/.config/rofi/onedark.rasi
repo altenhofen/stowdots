@@ -1,16 +1,16 @@
 * {
-  black:      #000000;
-  red:        #eb6e67;
-  green:      #95ee8f;
-  yellow:     #f8c456;
-  blue:       #6eaafb;
-  magenta:   #d886f3;
-  cyan:       #6cdcf7;
-  emphasis:   #50536b;
-  text:       #dfdfdf;
-  text-alt:   #b2b2b2;
-  fg:         #abb2bf;
-  bg:         #282c34;
+  black:      #181818;
+  red:        #ab4642;
+  green:      #a1b56c;
+  yellow:     #f7ca88;
+  blue:       #7cafc2;
+  magenta:   #ba8baf;
+  cyan:       #86c1b9;
+  emphasis:   #383838;
+  text:       #d8d8d8;
+  text-alt:   #b8b8b8;
+  fg:         #b8b8b8;
+  bg:         #181818;
 
   spacing: 0;
   background-color: transparent;
@@ -22,7 +22,7 @@
 window {
   transparency: "real";
   fullscreen: true;
-  background-color: #00000099;
+  background-color: #18181899;
 }
 
 mainbox {
@@ -57,7 +57,7 @@ listview {
 element {
   padding: 5px;
   text-color: @text-alt;
-  highlight: bold #95ee8f; /* green */
+  highlight: bold #a1b56c; /* green */
   border-radius: 3px;
 }
 
