@@ -1,0 +1,294 @@
+#!/usr/bin/env bash
+# audio-switch - Manage audio input/output devices via rofi (PipeWire/PulseAudio)
+#
+# Usage:
+#   audio-switch              Show main menu (Output / Input)
+#   audio-switch output       Show output device menu
+#   audio-switch input        Show input device menu
+#   audio-switch set-output <name>   Set default output (sink)
+#   audio-switch set-input <name>    Set default input (source)
+#   audio-switch help         Show this help
+
+set -euo pipefail
+
+# ── Rofi theme ──────────────────────────────────────────────────────────────
+# Falls back to default rofi theme if the custom one is missing.
+ROFI_THEME="${XDG_CONFIG_HOME:-$HOME/.config}/rofi/audio.rasi"
+if [[ -f "$ROFI_THEME" ]]; then
+    ROFI_CMD=(rofi -theme "$ROFI_THEME" -i -dmenu -p)
+else
+    ROFI_CMD=(rofi -i -dmenu -p)
+fi
+
+# ── pactl wrappers ───────────────────────────────────────────────────────────
+get_default_sink()     { pactl get-default-sink 2>/dev/null || true; }
+get_default_source()   { pactl get-default-source 2>/dev/null || true; }
+get_sink_volume()      { pactl get-sink-volume @DEFAULT_SINK@ 2>/dev/null | head -1 | grep -oP '\d+%' | head -1 || echo "—"; }
+get_sink_mute()        { pactl get-sink-mute @DEFAULT_SINK@ 2>/dev/null | awk '{print $2}'; }
+get_source_volume()    { pactl get-source-volume @DEFAULT_SOURCE@ 2>/dev/null | head -1 | grep -oP '\d+%' | head -1 || echo "—"; }
+get_source_mute()      { pactl get-source-mute @DEFAULT_SOURCE@ 2>/dev/null | awk '{print $2}'; }
+
+set_default_sink()     { pactl set-default-sink "$1"; }
+set_default_source()   { pactl set-default-source "$1"; }
+
+# ── Device list helpers ──────────────────────────────────────────────────────
+# pactl list short sinks/sources → "index  name  module  format  state"
+# We only need index + name.
+list_sinks() {
+    pactl list short sinks | awk '{print $1"\t"$2}'
+}
+
+list_sources() {
+    pactl list short sources | grep -v '\.monitor$' | awk '{print $1"\t"$2}'
+}
+
+# ── Pretty-print helpers ─────────────────────────────────────────────────────
+# Get friendly description for a device by its index (from pactl list sinks/sources).
+device_description() {
+    local type="$1"  # "sinks" or "sources"
+    local idx="$2"
+    pactl list "$type" | awk -v idx="$idx" -v t="$type" '
+        ($1 == "Sink" || $1 == "Source") && $2 == ("#" idx) { found=1; next }
+        found && /Description:/ { sub(/.*Description: /, ""); print; exit }
+    '
+}
+
+# Get state for a device by index (RUNNING, IDLE, SUSPENDED).
+device_state() {
+    local type="$1"
+    local idx="$2"
+    pactl list "$type" | awk -v idx="$idx" -v t="$type" '
+        ($1 == "Sink" || $1 == "Source") && $2 == ("#" idx) { found=1; next }
+        found && /State:/ { sub(/.*State: /, ""); print; exit }
+    '
+}
+
+# ── Notification helper ──────────────────────────────────────────────────────
+notify() {
+    local msg="$1"
+    if command -v notify-send &>/dev/null; then
+        notify-send -u low -a "audio-switch" "Audio" "$msg"
+    fi
+}
+
+# ── Display sink/source menu and let user pick one ──────────────────────────
+pick_device() {
+    local type="$1"          # "sinks" or "sources"
+    local action="$2"        # "output" or "input"
+    local default name idx desc state
+    local -a entries=()
+
+    if [[ "$type" == "sinks" ]]; then
+        default="$(get_default_sink)"
+    else
+        default="$(get_default_source)"
+    fi
+
+    while IFS=$'\t' read -r idx name; do
+        desc="$(device_description "$type" "$idx")"
+        state="$(device_state "$type" "$idx")"
+        # Mark the current default with an asterisk
+        local marker=""
+        [[ "$name" == "$default" ]] && marker="* "
+        entries+=("${marker}${desc}  [${state}]")
+    done <<< "$(list_sources_or_sinks "$type")"
+
+    printf '%s\n' "${entries[@]}" | "${ROFI_CMD[@]}" "$action:"
+}
+
+# ── Wrapper that calls list_sinks or list_sources based on type ───────────────
+list_sources_or_sinks() {
+    case "$1" in
+        sinks)   list_sinks ;;
+        sources) list_sources ;;
+    esac
+}
+
+# ── Set output (sink) ────────────────────────────────────────────────────────
+set_output() {
+    local name="$1"
+    set_default_sink "$name"
+    notify "Output: $name"
+}
+
+# ── Set input (source) ──────────────────────────────────────────────────────
+set_input() {
+    local name="$1"
+    set_default_source "$name"
+    notify "Input: $name"
+}
+
+# ── Toggle mute / adjust volume for the default sink or source ──────────────
+toggle_mute() {
+    local kind="$1"   # "sink" or "source"
+    if [[ "$kind" == "sink" ]]; then
+        pactl set-sink-mute @DEFAULT_SINK@ toggle
+        local m; m="$(get_sink_mute)"
+        [[ "$m" == "yes" ]] && notify "Output muted" || notify "Output unmuted"
+    else
+        pactl set-source-mute @DEFAULT_SOURCE@ toggle
+        local m; m="$(get_source_mute)"
+        [[ "$m" == "yes" ]] && notify "Input muted" || notify "Input unmuted"
+    fi
+}
+
+adjust_volume() {
+    local kind="$1"   # "sink" or "source"
+    local delta="$2"  # e.g. "+5%" or "-5%"
+    if [[ "$kind" == "sink" ]]; then
+        pactl set-sink-volume @DEFAULT_SINK@ "$delta"
+        notify "Output volume: $(get_sink_volume)"
+    else
+        pactl set-source-volume @DEFAULT_SOURCE@ "$delta"
+        notify "Input volume: $(get_source_volume)"
+    fi
+}
+
+# ── Show current status ──────────────────────────────────────────────────────
+show_status() {
+    local out_name src_name out_desc src_desc
+    out_name="$(get_default_sink)"
+    src_name="$(get_default_source)"
+
+    # Build a short summary
+    out_desc="$(device_description sinks "$(list_sinks | awk -v n="$out_name" '$2==n{print $1; exit}')")"
+    src_desc="$(device_description sources "$(list_sources | grep -v '\.monitor$' | awk -v n="$src_name" '$2==n{print $1; exit}')")"
+
+    echo "Output: ${out_desc:-$out_name}  ($(get_sink_volume))"
+    echo "Input:  ${src_desc:-$src_name}  ($(get_source_volume))"
+}
+
+# ── Main menu ────────────────────────────────────────────────────────────────
+main_menu() {
+    local out_name src_name out_info src_info
+    out_name="$(get_default_sink)"
+    src_name="$(get_default_source)"
+    out_info="$(device_description sinks "$(list_sinks | awk -v n="$out_name" '$2==n{print $1; exit}')")  [$(get_sink_volume)]"
+    src_info="$(device_description sources "$(list_sources | grep -v '\.monitor$' | awk -v n="$src_name" '$2==n{print $1; exit}')")  [$(get_source_volume)]"
+
+    local options=(
+        "Output  ▸  $out_info"
+        "Input   ▸  $src_info"
+        "Toggle output mute  ($(get_sink_mute))"
+        "Toggle input mute   ($(get_source_mute))"
+        "Volume +5%"
+        "Volume -5%"
+    )
+
+    printf '%s\n' "${options[@]}" | "${ROFI_CMD[@]}" "Audio:"
+}
+
+# ── Parse menu selection ────────────────────────────────────────────────────
+handle_selection() {
+    local sel="$1"
+
+    if [[ "$sel" == Output* ]]; then
+        local chosen
+        chosen="$(pick_device sinks output)"
+        if [[ -n "$chosen" ]]; then
+            local name
+            # Reverse-lookup: description+state → device index → name
+            name="$(resolve_sinks_name "$chosen")"
+            set_output "$name"
+        fi
+
+    elif [[ "$sel" == Input* ]]; then
+        local chosen
+        chosen="$(pick_device sources input)"
+        if [[ -n "$chosen" ]]; then
+            local name
+            name="$(resolve_source_name "$chosen")"
+            set_input "$name"
+        fi
+
+    elif [[ "$sel" == "Toggle output mute"* ]]; then
+        toggle_mute sink
+    elif [[ "$sel" == "Toggle input mute"* ]]; then
+        toggle_mute source
+    elif [[ "$sel" == "Volume +5%"* ]]; then
+        adjust_volume sink +5%
+        adjust_volume source +5%
+    elif [[ "$sel" == "Volume -5%"* ]]; then
+        adjust_volume sink -5%
+        adjust_volume source -5%
+    fi
+}
+
+resolve_sinks_name() {
+    local display="$1"
+    local -a entries=()
+    while IFS=$'\t' read -r idx name; do
+        desc="$(device_description sinks "$idx")"
+        state="$(device_state sinks "$idx")"
+        local marker=""
+        [[ "$name" == "$(get_default_sink)" ]] && marker="* "
+        local line="${marker}${desc}  [${state}]"
+        [[ "$line" == "$display" ]] && echo "$name"
+    done <<< "$(list_sinks)"
+}
+
+resolve_source_name() {
+    local display="$1"
+    local -a entries=()
+    while IFS=$'\t' read -r idx name; do
+        desc="$(device_description sources "$idx")"
+        state="$(device_state sources "$idx")"
+        local marker=""
+        [[ "$name" == "$(get_default_source)" ]] && marker="* "
+        local line="${marker}${desc}  [${state}]"
+        [[ "$line" == "$display" ]] && echo "$name"
+    done <<< "$(list_sources)"
+}
+
+# ── Help ─────────────────────────────────────────────────────────────────────
+show_help() {
+    cat <<'EOF'
+audio-switch — Manage audio devices via rofi
+
+Usage:
+  audio-switch              Show main menu
+  audio-switch output       Jump straight to output device picker
+  audio-switch input        Jump straight to input device picker
+  audio-switch status       Print current default output/input
+  audio-switch mute-sink    Toggle mute on default output
+  audio-switch mute-source  Toggle mute on default input
+  audio-switch vol-up       Increase volume by 5%
+  audio-switch vol-down     Decrease volume by 5%
+  audio-switch help         Show this help
+EOF
+}
+
+# ── Entry point ──────────────────────────────────────────────────────────────
+case "${1:-}" in
+    "" )
+        sel="$(main_menu)"
+        [[ -n "$sel" ]] && handle_selection "$sel"
+        ;;
+    output )
+        sel="$(pick_device sinks output)"
+        if [[ -n "$sel" ]]; then
+            name="$(resolve_sinks_name "$sel")"
+            set_output "$name"
+        fi
+        ;;
+    input )
+        sel="$(pick_device sources input)"
+        if [[ -n "$sel" ]]; then
+            name="$(resolve_source_name "$sel")"
+            set_input "$name"
+        fi
+        ;;
+    status )
+        show_status
+        ;;
+    mute-sink )    toggle_mute sink ;;
+    mute-source )  toggle_mute source ;;
+    vol-up )       adjust_volume sink +5%; adjust_volume source +5% ;;
+    vol-down )     adjust_volume sink -5%; adjust_volume source -5% ;;
+    help|-h|--help ) show_help ;;
+    * )
+        echo "Unknown command: $1" >&2
+        show_help
+        exit 1
+        ;;
+esac
