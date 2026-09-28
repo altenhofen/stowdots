@@ -1,4 +1,4 @@
-/* Top-right island for hikari: black, white, 9px, no transitions. */
+/* labwc waybar: top-right island + left window list. Black/white, 9px. */
 
 * {
   border: none;
@@ -32,7 +32,7 @@ window#waybar {
   background-color: #000000;
   color: #ffffff;
   border: 1px solid #333333;
-  border-radius: 7px;
+  border-radius: 0px;
   margin: 5px 6px 0 0;
   padding: 2px;
 }
@@ -72,4 +72,52 @@ tooltip label {
   background-color: transparent;
   color: #ffffff;
   font-size: 9px;
+}
+
+/* fixed-width vertical window list (windows.jsonc), bottom-left island */
+#taskbar {
+  background-color: #000000;
+  color: #ffffff;
+  border: 1px solid #333333;
+  border-radius: 0px;
+  margin: 0;
+  padding: 2px;
+  min-width: 220px;
+}
+
+#taskbar button {
+  min-width: 0;
+  min-height: 18px;
+  padding: 2px 6px;
+  margin: 1px 0;
+  color: #aaaaaa;
+  background-color: transparent;
+  -GtkButton-xalign: 0;
+}
+
+#taskbar button > box {
+  -GtkBox-spacing: 0;
+  -GtkWidget-halign: start;
+}
+
+#taskbar button label {
+  margin: 0;
+  padding: 0;
+  -GtkWidget-halign: start;
+  -GtkWidget-hexpand: true;
+  -GtkLabel-xalign: 0;
+}
+
+#taskbar button.active {
+  color: #ffffff;
+  background-color: #1a1a1a;
+}
+
+#taskbar button.minimized {
+  opacity: 0.55;
+}
+
+#taskbar button:hover {
+  background-color: #141414;
+  color: #ffffff;
 }

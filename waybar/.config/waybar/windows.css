@@ -1,0 +1,11 @@
+@import "style.css";
+
+/* windows.jsonc puts wlr/taskbar in modules-right; style.css styles that box
+   for the top-bar clock/tray island, which stacked a second border on #taskbar. */
+.modules-right {
+  background-color: transparent;
+  border: none;
+  margin: 0 0 6px 5px;
+  padding: 0;
+}
+

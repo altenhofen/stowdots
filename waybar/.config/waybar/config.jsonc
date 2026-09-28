@@ -1,18 +1,15 @@
-// Minimal waybar for hikari: clock + system tray, flush in the top-right
-// corner. 9px monospace, black/white, sharp corners, no padding.
+// Top bar: clock + system tray, flush in the top-right corner. 9px monospace,
+// black/white, sharp corners, no padding.
 //
-// The layer surface spans the whole width (hikari centres a top bar that is
-// narrower than the screen and waybar cannot anchor one to the right edge
-// only), so the surface is transparent and the black block is drawn around
-// the `.modules-right` box, which shrinks to fit its modules and sits flush
-// against the top-right corner.
+// The layer surface spans the whole width, so the surface is transparent and
+// the black block is drawn around `.modules-right`, which shrinks to fit and
+// sits flush against the top-right corner.
 //
-// hikari notes:
-//  * build hikari with WITH_LAYERSHELL=YES, otherwise waybar has no layer to
-//    draw on.
-//  * start it from ~/.config/hikari/autostart:  waybar &
-//  * wlr/taskbar (window title list) needs wlr-foreign-toplevel-management,
-//    which hikari does not implement -- that is why it is not used here.
+// labwc: start from ~/.config/labwc/autostart:
+//   waybar --log-level off &
+//   waybar -c ~/.config/waybar/windows.jsonc -s ~/.config/waybar/windows.css --log-level off &
+//
+// Vertical window list config: windows.jsonc (wlr/taskbar).
 
 {
   "layer": "top",
@@ -29,8 +26,8 @@
   "tray": {
     "icon-size": 14,
     "spacing": 5,
-    // Hide Passive icons (e.g. Vesktop) to avoid hikari crash on
-    // xdg_popup_unconstrain when activating its tray menu.
+    // Hide Passive icons (e.g. Vesktop) to reduce tray popup issues on some
+    // compositors.
     "show-passive-items": false
   }
 }

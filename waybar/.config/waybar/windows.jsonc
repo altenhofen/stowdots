@@ -1,0 +1,33 @@
+// Fixed-width vertical window list for labwc (second waybar instance).
+// Started from labwc autostart alongside config.jsonc.
+
+{
+  "layer": "bottom",
+  "position": "left",
+  "width": 220,
+  "spacing": 0,
+  "modules-right": ["wlr/taskbar"],
+  "wlr/taskbar": {
+    // One GtkLabel (glyph + title). Separate {icon} stacks vertically on left/right bars.
+    "format": "{title}",
+    "truncate": true,
+    "tooltip-format": "{title}",
+    "rewrite": {
+      "(?i)firefox": "󰈹 $0",
+      "(?i)chrome|chromium": "󰊯 $0",
+      "(?i)code|vscode": "󰨞 $0",
+      "(?i)cursor": "󰆧 $0",
+      "(?i)kitty|alacritty|foot|terminal": "󰆍 $0",
+      "(?i)discord|vesktop": "󰙯 $0",
+      "(?i)spotify": "󰓇 $0",
+      "(?i)thunderbird": "󰇮 $0",
+      "(?i)nvim|neovim|vim": "󰊷 $0",
+      "(?i)emacs": "󰘲 $0",
+      "^(.{28}).+$": "$1…"
+    },
+    "on-click": "activate",
+    "on-click-middle": "close",
+    "ignore-list": ["waybar"],
+    "all-outputs": false
+  }
+}
