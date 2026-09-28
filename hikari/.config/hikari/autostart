@@ -1,0 +1,9 @@
+#!/bin/sh
+systemctl --user import-environment DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP              
+XDG_SESSION_TYPE                                                                             
+dbus-update-activation-environment DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP               
+XDG_SESSION_TYPE                                                                             
+systemctl --user restart xdg-desktop-portal-gtk.service &
+export XDG_CURRENT_DESKTOP=wlroots
+waybar &
+

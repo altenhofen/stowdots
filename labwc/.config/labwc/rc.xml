@@ -1,0 +1,53 @@
+<labwc_config>
+
+  <theme>
+    <name>Clearlooks-3.4</name>
+    <cornerRadius>0</cornerRadius>
+    <font name="sans" size="10" />
+  </theme>
+
+  <windowRules>
+      <!-- <windowRule identifier="foot" serverDecoration="no" /> !-->
+  </windowRules>
+
+  <keyboard>
+    <default />
+    <keybind key="W-Return">
+      <action name="Execute" command="foot" />
+    </keybind>
+    <!--
+      Remove a previously defined keybind
+      A shorter alternative is <keybind key="W-F4" />
+    -->
+    <keybind key="W-F4">
+      <action name="None" />
+    </keybind>
+
+    <keybind key="W-w">
+      <action name="Close" />
+    </keybind>
+
+    <keybind key="W-a">
+      <action name="ToggleMaximize" />
+    </keybind>
+
+    <keybind key="W-S-Return">
+      <action name="Execute" command="helium-browser" />
+    </keybind>
+
+    <keybind key="W-d">
+      <action name="Execute" command="rofi -combi-modi run,drun,filebrowser -show combi -sort" />
+    </keybind>
+
+  </keyboard>
+
+  <mouse>
+    <default />
+    <!-- Show a custom menu on desktop right click -->
+    <!-- <context name="Root"> -->
+    <!--   <mousebind button="Right" action="Press"> -->
+    <!--     <action name="ShowMenu" menu="some-custom-menu" /> -->
+    <!--   </mousebind> -->
+    <!-- </context> -->
+  </mouse>
+</labwc_config>

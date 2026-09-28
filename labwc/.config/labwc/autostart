@@ -1,0 +1,4 @@
+swaybg -i ~/Pictures/wallpapers/bg.png -m fill &
+waybar --log-level off &
+mako >/dev/null 2>&1 &
+

@@ -1,94 +1,75 @@
-/* -----------------------------------------------------------------------------
- * Base styles
- * -------------------------------------------------------------------------- */
+/* Top-right island for hikari: black, white, 9px, no transitions. */
 
-/* Reset all styles */
 * {
   border: none;
   border-radius: 0;
-  min-height: 0;
   margin: 0;
   padding: 0;
+  min-height: 0;
+  min-width: 0;
+  font-family: "BlexMono Nerd Font", "DejaVu Sans Mono", monospace;
+  font-size: 9px;
+  text-shadow: none;
+  box-shadow: none;
+  background-image: none;
+
+  /* no hover fades, no animations */
+  transition-property: none;
+  transition-duration: 0s;
+  transition-delay: 0s;
+  animation-name: none;
+  animation-duration: 0s;
 }
 
-/* The whole bar */
-#waybar {
-  background: rgba(46, 52, 64, 1); /* Nord 0 (Polar Night) with transparency */
-  color: #D8DEE9; /* Nord 1 (Snow Storm) */
-  font-family: CaskaydiaCove Nerd Font;
-  font-size: 13px;
+/* the surface spans the whole width, only the island is painted */
+window#waybar {
+  background-color: transparent;
+  color: #ffffff;
 }
 
-/* Each module */
-#battery,
-#clock,
-#cpu,
-#custom-keyboard-layout,
-#memory,
-#mode,
-#network,
-#pulseaudio,
-#temperature,
-#tray,
-#language,
-#bluetooth,
-#mic,
-#sound {
-  padding-left: 7px;
-  padding-right: 7px;
-  margin-left: 5px;
-  margin-right: 5px;
-  background-color: rgba(68, 76, 88, 0.8); /* Lighter Nord 2 (Frost) with transparency */
+/* black island around clock + tray */
+.modules-right {
+  background-color: #000000;
+  color: #ffffff;
+  border: 1px solid #333333;
+  border-radius: 7px;
+  margin: 5px 6px 0 0;
+  padding: 2px;
 }
 
-/* Module-specific styles */
 #clock {
-  font-size: 16px;
-}
-
-#network {
-}
-
-#network.disconnected {
-  color: #BF616A; /* Nord 11 (Red) */
-}
-
-#pulseaudio {
-  background-color: rgba(64, 74, 87, 0.8); /* Lighter Nord 3 (Snow Storm) */
-}
-
-#pulseaudio.muted {
-  /* No additional styles */
+  color: #ffffff;
+  padding: 2px 8px;
+  border-right: 1px solid #262626;
 }
 
 #tray {
-  margin-right: 10px;
+  padding: 2px 6px 2px 7px;
 }
 
-#window {
+#tray > .passive {
+  opacity: 0.75;
 }
 
-/* https://github.com/Alexays/Waybar/wiki/FAQ#the-workspace-buttons-have-a-strange-hover-effect */
-button:hover {
-  background: inherit;
-  box-shadow: inherit;
+#tray > .needs-attention {
+  background-color: #ffffff;
+  color: #000000;
+  border-radius: 0;
 }
 
-#workspaces button {
-  color: #D8DEE9; /* Nord 1 (Snow Storm) */
-  font-size: 20px;
-  padding-left: 7px;
-  padding-right: 10px;
+#tray > *:hover {
+  background-color: #1a1a1a;
 }
 
-#workspaces button:hover {
-  background: rgba(0, 0, 0, 0.2);
+/* clock tooltip (click the clock) */
+tooltip {
+  background-color: #000000;
+  border: 1px solid #333333;
+  border-radius: 0px;
 }
 
-#workspaces button.active {
-  border-color: #A3BE8C; /* Nord 6 (Frost - light green) */
-  background-color: #4C566A; /* Nord 2 (Frost) */
+tooltip label {
+  background-color: transparent;
+  color: #ffffff;
+  font-size: 9px;
 }
-
-
-
